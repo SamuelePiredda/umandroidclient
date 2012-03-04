@@ -40,6 +40,7 @@ import android.widget.ViewFlipper;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 
+
 public class SfogliaRisultatiActivity extends Activity {
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
@@ -146,6 +147,9 @@ public class SfogliaRisultatiActivity extends Activity {
 		TextView t = (TextView) l.getChildAt(0);
 		ListView lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, android.R.id.text1);
+		lv.setAdapter(adapter);
 		t.setText("ANIA");
 		visBancheDati.put(Database.ANIA, l);
 
@@ -153,12 +157,18 @@ public class SfogliaRisultatiActivity extends Activity {
 		t = (TextView) l.getChildAt(0);
 		lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
+		adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, android.R.id.text1);
+		lv.setAdapter(adapter);
 		t.setText("PRA");
 		visBancheDati.put(Database.PRA, l);
 
 		l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
 		lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
+		adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, android.R.id.text1);
+		lv.setAdapter(adapter);
 		t = (TextView) l.getChildAt(0);
 		t.setText("RUBATI");
 		visBancheDati.put(Database.RUBATI, l);
@@ -197,7 +207,8 @@ public class SfogliaRisultatiActivity extends Activity {
 				connection.send(frame);
 				while (true) {
 					StompFrame received = connection.receive();
-					QueryReply qrep= (QueryReply) xstream.fromXML(received.contentAsString());
+					QueryReply qrep = (QueryReply) xstream.fromXML(received
+							.contentAsString());
 					publishProgress(qrep);
 				}
 			} catch (URISyntaxException e) {
@@ -212,30 +223,46 @@ public class SfogliaRisultatiActivity extends Activity {
 
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
-			// TODO Auto-generated method stub
+//			for (Entry<Integer, Map<String,String>> unRisultato : qr.getRisultati().entrySet()) {
+//				for (Entry<String, String> e : unRisultato.getValue().entrySet()) {
+//					Table t = searchWindow.getTabelle().get(qr.getDaQualeDB());
+//					RichTextArea chiave = new RichTextArea();
+//					chiave.setValue(e.getKey());
+//					chiave.setSizeFull();
+//					chiave.setReadOnly(true);
+//					RichTextArea valore = new RichTextArea();
+//					valore.setValue(e.getValue());
+//					valore.setSizeFull();
+//					valore.setReadOnly(true);
+//					
+//					
+//					 t.addItem(new Object[] {chiave,valore},unRisultato.getKey());
+//
+//				}
+//			}
 			super.onProgressUpdate(values);
 		}
 
-//		@Override
-//		protected void onPostExecute(Void result) {
-//			super.onPostExecute(result);
-//			String[] values = new String[] { "Android", "iPhone",
-//					"WindowsMobile", "Blackberry", "WebOS", "Ubuntu",
-//					"Windows7", "Max OS X", "Linux", "OS/2" };
-//
-//			// First paramenter - Context
-//			// Second parameter - Layout for the row
-//			// Third parameter - ID of the View to which the data is written
-//			// Forth - the Array of data
-//			ArrayAdapter<String> adapter = new ArrayAdapter<String>(io,
-//					android.R.layout.simple_list_item_1, android.R.id.text1,
-//					values);
-//
-//			// Assign adapter to ListView
-//			ListView x = (ListView) visBancheDati.entrySet().iterator().next()
-//					.getValue().getChildAt(1);
-//			x.setAdapter(adapter);
-//		}
+		// @Override
+		// protected void onPostExecute(Void result) {
+		// super.onPostExecute(result);
+		// String[] values = new String[] { "Android", "iPhone",
+		// "WindowsMobile", "Blackberry", "WebOS", "Ubuntu",
+		// "Windows7", "Max OS X", "Linux", "OS/2" };
+		//
+		// // First paramenter - Context
+		// // Second parameter - Layout for the row
+		// // Third parameter - ID of the View to which the data is written
+		// // Forth - the Array of data
+		// ArrayAdapter<String> adapter = new ArrayAdapter<String>(io,
+		// android.R.layout.simple_list_item_1, android.R.id.text1,
+		// values);
+		//
+		// // Assign adapter to ListView
+		// ListView x = (ListView) visBancheDati.entrySet().iterator().next()
+		// .getValue().getChildAt(1);
+		// x.setAdapter(adapter);
+		// }
 
 	}
 
