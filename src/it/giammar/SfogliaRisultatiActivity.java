@@ -11,7 +11,9 @@ import it.giammar.pratomodel.QueryRequest;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -33,13 +35,13 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
-
 
 public class SfogliaRisultatiActivity extends Activity {
 	private static final int SWIPE_MIN_DISTANCE = 120;
@@ -56,6 +58,7 @@ public class SfogliaRisultatiActivity extends Activity {
 	LayoutInflater inflater;
 	private Activity io = this;
 	private Map<QueryReply.Database, LinearLayout> visBancheDati = new HashMap<QueryReply.Database, LinearLayout>();
+	private Map<QueryReply.Database, List<String>> righeBancheDati = new HashMap<QueryReply.Database, List<String>>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +119,7 @@ public class SfogliaRisultatiActivity extends Activity {
 		// "Max zxcvzxcvzxcv X", "zxb fg", "OSxcvzxcvzxcvzxcvzxcv2" };
 		//
 		// // First paramenter - Context
-		// // Second parameter - Layout for the row
+		// // Second parameter - Layout for the ro
 		// // Third parameter - ID of the View to which the data is written
 		// // Forth - the Array of data
 		// ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(this,
@@ -147,31 +150,41 @@ public class SfogliaRisultatiActivity extends Activity {
 		TextView t = (TextView) l.getChildAt(0);
 		ListView lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
+		ArrayList<String> listItems = new ArrayList<String>();
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1);
+				android.R.layout.simple_list_item_1, android.R.id.text1,
+				listItems);
 		lv.setAdapter(adapter);
 		t.setText("ANIA");
 		visBancheDati.put(Database.ANIA, l);
+		righeBancheDati.put(Database.ANIA, listItems);
 
 		l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
 		t = (TextView) l.getChildAt(0);
 		lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
+		listItems = new ArrayList<String>();
 		adapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1);
+				android.R.layout.simple_list_item_1, android.R.id.text1,
+				listItems);
 		lv.setAdapter(adapter);
 		t.setText("PRA");
 		visBancheDati.put(Database.PRA, l);
+		righeBancheDati.put(Database.ANIA, listItems);
 
 		l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
 		lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
+		listItems = new ArrayList<String>();
 		adapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1);
+				android.R.layout.simple_list_item_1, android.R.id.text1,
+				listItems);
 		lv.setAdapter(adapter);
 		t = (TextView) l.getChildAt(0);
 		t.setText("RUBATI");
 		visBancheDati.put(Database.RUBATI, l);
+		righeBancheDati.put(Database.ANIA, listItems);
+
 	}
 
 	private class EffettuaQuery extends
@@ -181,7 +194,7 @@ public class SfogliaRisultatiActivity extends Activity {
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
-				stomp = new Stomp("tcp://localhost:61613");
+				stomp = new Stomp("tcp://192.168.111.39:61613");
 
 				BlockingConnection connection = stomp.connectBlocking();
 
@@ -207,6 +220,7 @@ public class SfogliaRisultatiActivity extends Activity {
 				connection.send(frame);
 				while (true) {
 					StompFrame received = connection.receive();
+					System.out.println(received.contentAsString());
 					QueryReply qrep = (QueryReply) xstream.fromXML(received
 							.contentAsString());
 					publishProgress(qrep);
@@ -223,23 +237,38 @@ public class SfogliaRisultatiActivity extends Activity {
 
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
-//			for (Entry<Integer, Map<String,String>> unRisultato : qr.getRisultati().entrySet()) {
-//				for (Entry<String, String> e : unRisultato.getValue().entrySet()) {
-//					Table t = searchWindow.getTabelle().get(qr.getDaQualeDB());
-//					RichTextArea chiave = new RichTextArea();
-//					chiave.setValue(e.getKey());
-//					chiave.setSizeFull();
-//					chiave.setReadOnly(true);
-//					RichTextArea valore = new RichTextArea();
-//					valore.setValue(e.getValue());
-//					valore.setSizeFull();
-//					valore.setReadOnly(true);
-//					
-//					
-//					 t.addItem(new Object[] {chiave,valore},unRisultato.getKey());
-//
-//				}
-//			}
+			QueryReply qr = values[0];
+			for (Entry<Integer, Map<String, String>> unRisultato : qr
+					.getRisultati().entrySet()) {
+				for (Entry<String, String> e : unRisultato.getValue()
+						.entrySet()) {
+					String rigaOutput = e.getKey() + " " + e.getValue();
+					LinearLayout rigaLayout = visBancheDati.get(qr
+							.getDaQualeDB());
+					ArrayAdapter righe = (ArrayAdapter) ((ListView) rigaLayout.getChildAt(1))
+							.getAdapter();
+					List<String> righeStringa = righeBancheDati.get(qr
+							.getDaQualeDB());
+					righeStringa.add(rigaOutput);
+					System.out.println(righeStringa);
+					righe.notifyDataSetChanged();
+					// Table t =
+					// searchWindow.getTabelle().get(qr.getDaQualeDB());
+					// RichTextArea chiave = new RichTextArea();
+					// chiave.setValue(e.getKey());
+					// chiave.setSizeFull();
+					// chiave.setReadOnly(true);
+					// RichTextArea valore = new RichTextArea();
+					// valore.setValue(e.getValue());
+					// valore.setSizeFull();
+					// valore.setReadOnly(true);
+					//
+					//
+					// t.addItem(new Object[]
+					// {chiave,valore},unRisultato.getKey());
+					//
+				}
+			}
 			super.onProgressUpdate(values);
 		}
 
