@@ -194,7 +194,7 @@ public class SfogliaRisultatiActivity extends Activity {
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
-				stomp = new Stomp("tcp://10.0.0.182:61613");
+				stomp = new Stomp("tcp://ufficiomobile.comune.prato.it:61613");
 
 				BlockingConnection connection = stomp.connectBlocking();
 
