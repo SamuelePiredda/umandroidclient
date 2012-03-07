@@ -11,11 +11,11 @@ import it.giammar.pratomodel.QueryRequest;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.fusesource.hawtbuf.AsciiBuffer;
 import org.fusesource.stomp.client.BlockingConnection;
@@ -35,18 +35,17 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 public class SfogliaRisultatiActivity extends Activity {
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
+	private static Random randomGenerator = new Random();
 	private GestureDetector gestureDetector;
 	View.OnTouchListener gestureListener;
 	private Animation slideLeftIn;
@@ -150,39 +149,33 @@ public class SfogliaRisultatiActivity extends Activity {
 		TextView t = (TextView) l.getChildAt(0);
 		ListView lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
-//		ArrayList<String> listItems = new ArrayList<String>();
-//		listItems.add("pippo");
+		// ArrayList<String> listItems = new ArrayList<String>();
+		// listItems.add("pippo");
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, android.R.id.text1);
 		adapter.setNotifyOnChange(true);
 		lv.setAdapter(adapter);
 		t.setText("ANIA");
 		visBancheDati.put(Database.ANIA, l);
-//		righeBancheDati.put(Database.ANIA, listItems);
+		// righeBancheDati.put(Database.ANIA, listItems);
 
-		
-		
-		
 		l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
 		t = (TextView) l.getChildAt(0);
 		lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
-//		listItems = new ArrayList<String>();
+		// listItems = new ArrayList<String>();
 		adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, android.R.id.text1);
 		adapter.setNotifyOnChange(true);
 		lv.setAdapter(adapter);
 		t.setText("PRA");
 		visBancheDati.put(Database.PRA, l);
-//		righeBancheDati.put(Database.PRA, listItems);
+		// righeBancheDati.put(Database.PRA, listItems);
 
-		
-		
-		
 		l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
 		lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
-//		listItems = new ArrayList<String>();
+		// listItems = new ArrayList<String>();
 		adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, android.R.id.text1);
 		adapter.setNotifyOnChange(true);
@@ -190,7 +183,7 @@ public class SfogliaRisultatiActivity extends Activity {
 		t = (TextView) l.getChildAt(0);
 		t.setText("RUBATI");
 		visBancheDati.put(Database.RUBATI, l);
-//		righeBancheDati.put(Database.RUBATI, listItems);
+		// righeBancheDati.put(Database.RUBATI, listItems);
 
 	}
 
@@ -212,6 +205,7 @@ public class SfogliaRisultatiActivity extends Activity {
 				StompFrame response = connection.request(frame);
 
 				QueryRequest q = params[0];
+				q.setVersione(randomGenerator.nextInt());
 				XStream xstream = new XStream();
 
 				frame = new StompFrame(SEND);
@@ -225,12 +219,18 @@ public class SfogliaRisultatiActivity extends Activity {
 						StompFrame.encodeHeader("test"));
 				frame.content(new AsciiBuffer(xstream.toXML(q)));
 				connection.send(frame);
-				while (true) {
+				int bdArrivate = 0;
+				while (bdArrivate < visBancheDati.size()) {
 					StompFrame received = connection.receive();
 					System.out.println(received.contentAsString());
 					QueryReply qrep = (QueryReply) xstream.fromXML(received
 							.contentAsString());
-					publishProgress(qrep);
+					System.out.println(qr.getVersione());
+					System.out.println(qrep.getVersione());
+					if (qr.getVersione() == qrep.getVersione()) {
+						publishProgress(qrep);
+						bdArrivate++;
+					}
 				}
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
@@ -252,19 +252,20 @@ public class SfogliaRisultatiActivity extends Activity {
 					String rigaOutput = e.getKey() + " " + e.getValue();
 					LinearLayout rigaLayout = visBancheDati.get(qr
 							.getDaQualeDB());
-					ArrayAdapter<String> righe = (ArrayAdapter<String>) ((ListView) rigaLayout.getChildAt(1))
-							.getAdapter();
-//					ListView lv= (ListView) rigaLayout.getChildAt(1);
-//					List<String> righeStringa = righeBancheDati.get(qr
-//							.getDaQualeDB());
-//					righeStringa.add(rigaOutput);
+					ArrayAdapter<String> righe = (ArrayAdapter<String>) ((ListView) rigaLayout
+							.getChildAt(1)).getAdapter();
+					// ListView lv= (ListView) rigaLayout.getChildAt(1);
+					// List<String> righeStringa = righeBancheDati.get(qr
+					// .getDaQualeDB());
+					// righeStringa.add(rigaOutput);
 					righe.add(rigaOutput);
-//					ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-//							android.R.layout.simple_list_item_1, android.R.id.text1,
-//							righeStringa);
-//					lv.setAdapter(adapter);
-//					System.out.println(righeStringa);
-//					righe.notifyDataSetChanged();
+					// ArrayAdapter<String> adapter = new
+					// ArrayAdapter<String>(this,
+					// android.R.layout.simple_list_item_1, android.R.id.text1,
+					// righeStringa);
+					// lv.setAdapter(adapter);
+					// System.out.println(righeStringa);
+					// righe.notifyDataSetChanged();
 					// Table t =
 					// searchWindow.getTabelle().get(qr.getDaQualeDB());
 					// RichTextArea chiave = new RichTextArea();
