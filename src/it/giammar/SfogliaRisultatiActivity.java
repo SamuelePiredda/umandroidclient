@@ -24,8 +24,10 @@ import org.fusesource.stomp.codec.StompFrame;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
@@ -46,6 +48,8 @@ public class SfogliaRisultatiActivity extends Activity {
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private static Random randomGenerator = new Random();
+	private static String fakeImei= new Integer(randomGenerator.nextInt()).toString();
+	private static String imei="";
 	private GestureDetector gestureDetector;
 	View.OnTouchListener gestureListener;
 	private Animation slideLeftIn;
@@ -58,7 +62,7 @@ public class SfogliaRisultatiActivity extends Activity {
 	private Activity io = this;
 	private Map<QueryReply.Database, LinearLayout> visBancheDati = new HashMap<QueryReply.Database, LinearLayout>();
 	private Map<QueryReply.Database, List<String>> righeBancheDati = new HashMap<QueryReply.Database, List<String>>();
-
+	private SharedPreferences sp;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -88,6 +92,8 @@ public class SfogliaRisultatiActivity extends Activity {
 
 		associaBancheDatiaViews();
 		riempiFlipperconBancheDati();
+		
+		sp=this.getPreferences(Context.MODE_PRIVATE);
 
 		qr = (QueryRequest) xstream.fromXML(getIntent().getExtras().getString(
 				"query"));
@@ -194,13 +200,13 @@ public class SfogliaRisultatiActivity extends Activity {
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
-				stomp = new Stomp("tcp://ufficiomobile.comune.prato.it:61613");
+				stomp = new Stomp("tcp://"+sp.getString("server", "ufficiomobile.comune.prato.it")+":"+sp.getString("port", "61613"));
 
 				BlockingConnection connection = stomp.connectBlocking();
 
 				StompFrame frame = new StompFrame(SUBSCRIBE);
 				frame.addHeader(DESTINATION,
-						StompFrame.encodeHeader("/queue/test"));
+						StompFrame.encodeHeader("/queue/"+imei()));
 				frame.addHeader(ID, connection.nextId());
 				StompFrame response = connection.request(frame);
 
@@ -216,7 +222,7 @@ public class SfogliaRisultatiActivity extends Activity {
 						StompFrame.encodeHeader("yes"));
 				frame.addHeader(
 						StompFrame.encodeHeader("CamelJmsDestinationName"),
-						StompFrame.encodeHeader("test"));
+						StompFrame.encodeHeader(imei()));
 				frame.content(new AsciiBuffer(xstream.toXML(q)));
 				connection.send(frame);
 				int bdArrivate = 0;
@@ -240,6 +246,22 @@ public class SfogliaRisultatiActivity extends Activity {
 				e.printStackTrace();
 			}
 			return null;
+		}
+
+		private String imei() {
+			if (!imei.equals("")) return imei;
+			else {
+				TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+				String possibleImei=tm.getDeviceId();
+				if (possibleImei.contains("0000000")) {
+					imei=fakeImei;
+					return imei;
+				}
+				else {
+					imei=possibleImei;
+					return imei;
+				}
+			}
 		}
 
 		@Override
