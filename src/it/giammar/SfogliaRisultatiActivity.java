@@ -63,6 +63,31 @@ public class SfogliaRisultatiActivity extends Activity {
 	private Map<QueryReply.Database, LinearLayout> visBancheDati = new HashMap<QueryReply.Database, LinearLayout>();
 	private Map<QueryReply.Database, List<String>> righeBancheDati = new HashMap<QueryReply.Database, List<String>>();
 	private SharedPreferences sp;
+	protected BlockingConnection connection;
+	
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+		chiudiConnessione();
+	}
+
+	private void chiudiConnessione() {
+		if (connection!=null)
+			try {
+				connection.close();
+				connection=null;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		chiudiConnessione();
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -200,9 +225,9 @@ public class SfogliaRisultatiActivity extends Activity {
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
-				stomp = new Stomp("tcp://"+sp.getString("server", "ufficiomobile.comune.prato.it")+":"+sp.getString("port", "61613"));
+				stomp = new Stomp("tcp://"+sp.getString("server", "10.0.0.182")+":"+sp.getString("port", "61613"));
 
-				BlockingConnection connection = stomp.connectBlocking();
+				connection = stomp.connectBlocking();
 
 				StompFrame frame = new StompFrame(SUBSCRIBE);
 				frame.addHeader(DESTINATION,
@@ -228,6 +253,7 @@ public class SfogliaRisultatiActivity extends Activity {
 				int bdArrivate = 0;
 				while (bdArrivate < visBancheDati.size()) {
 					StompFrame received = connection.receive();
+					
 					System.out.println(received.contentAsString());
 					QueryReply qrep = (QueryReply) xstream.fromXML(received
 							.contentAsString());
@@ -237,7 +263,10 @@ public class SfogliaRisultatiActivity extends Activity {
 						publishProgress(qrep);
 						bdArrivate++;
 					}
+					
 				}
+				connection.close();
+				connection=null;
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -255,12 +284,14 @@ public class SfogliaRisultatiActivity extends Activity {
 				String possibleImei=tm.getDeviceId();
 				if (possibleImei.contains("0000000")) {
 					imei=fakeImei;
-					return imei;
+					
 				}
 				else {
 					imei=possibleImei;
-					return imei;
+					
 				}
+				System.out.println("IMEI--------------"+imei);
+				return imei;
 			}
 		}
 
