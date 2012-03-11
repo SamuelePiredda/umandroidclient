@@ -118,7 +118,7 @@ public class SfogliaRisultatiActivity extends Activity {
 		associaBancheDatiaViews();
 		riempiFlipperconBancheDati();
 		
-		sp=this.getPreferences(Context.MODE_PRIVATE);
+		sp=this.getSharedPreferences("UM",Context.MODE_PRIVATE);
 
 		qr = (QueryRequest) xstream.fromXML(getIntent().getExtras().getString(
 				"query"));
@@ -225,7 +225,8 @@ public class SfogliaRisultatiActivity extends Activity {
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
-				stomp = new Stomp("tcp://"+sp.getString("server", "10.0.0.182")+":"+sp.getString("port", "61613"));
+				System.out.println("CONNESSIONE A:    "+sp.getString("host", "ufficiomobile.comune.prato.it"));
+				stomp = new Stomp("tcp://"+sp.getString("host", "ufficiomobile.comune.prato.it")+":"+sp.getString("port", "61613"));
 
 				connection = stomp.connectBlocking();
 

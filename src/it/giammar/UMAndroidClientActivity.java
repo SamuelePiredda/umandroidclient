@@ -43,6 +43,8 @@ public class UMAndroidClientActivity extends Activity implements OnClickListener
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent pref = new Intent(this, PreferenzeActivity.class);
+		this.startActivity(pref);
 		return true;
 	}
 
