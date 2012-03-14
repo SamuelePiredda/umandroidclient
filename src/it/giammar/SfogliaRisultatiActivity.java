@@ -48,8 +48,9 @@ public class SfogliaRisultatiActivity extends Activity {
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private static Random randomGenerator = new Random();
-	private static String fakeImei= new Integer(randomGenerator.nextInt()).toString();
-	private static String imei="";
+	private static String fakeImei = new Integer(randomGenerator.nextInt())
+			.toString();
+	private static String imei = "";
 	private GestureDetector gestureDetector;
 	View.OnTouchListener gestureListener;
 	private Animation slideLeftIn;
@@ -64,18 +65,24 @@ public class SfogliaRisultatiActivity extends Activity {
 	private Map<QueryReply.Database, List<String>> righeBancheDati = new HashMap<QueryReply.Database, List<String>>();
 	private SharedPreferences sp;
 	protected BlockingConnection connection;
-	
+	private EffettuaQuery eq;
+
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
-		chiudiConnessione();
+		eq.cancel(true);
+		chiudiTutto();
 	}
 
-	private void chiudiConnessione() {
-		if (connection!=null)
+	private void chiudiTutto() {
+		if (eq != null && eq.getStatus() != AsyncTask.Status.FINISHED) {
+			eq.cancel(true);
+			eq = null;
+		}
+		if (connection != null)
 			try {
 				connection.close();
-				connection=null;
+				connection = null;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -85,7 +92,7 @@ public class SfogliaRisultatiActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		chiudiConnessione();
+		chiudiTutto();
 	}
 
 	@Override
@@ -117,12 +124,13 @@ public class SfogliaRisultatiActivity extends Activity {
 
 		associaBancheDatiaViews();
 		riempiFlipperconBancheDati();
-		
-		sp=this.getSharedPreferences("UM",Context.MODE_PRIVATE);
+
+		sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);
 
 		qr = (QueryRequest) xstream.fromXML(getIntent().getExtras().getString(
 				"query"));
-		new EffettuaQuery().execute(qr);
+		eq = new EffettuaQuery();
+		eq.execute(qr);
 
 		// ListView listView = (ListView) inflater.inflate(R.layout.risultati,
 		// null);
@@ -225,14 +233,19 @@ public class SfogliaRisultatiActivity extends Activity {
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
-				System.out.println("CONNESSIONE A:    "+sp.getString("host", "ufficiomobile.comune.prato.it"));
-				stomp = new Stomp("tcp://"+sp.getString("host", "ufficiomobile.comune.prato.it")+":"+sp.getString("port", "61613"));
+				System.out
+						.println("CONNESSIONE A:    "
+								+ sp.getString("host",
+										"ufficiomobile.comune.prato.it"));
+				stomp = new Stomp("tcp://"
+						+ sp.getString("host", "ufficiomobile.comune.prato.it")
+						+ ":" + sp.getString("port", "61613"));
 
 				connection = stomp.connectBlocking();
 
 				StompFrame frame = new StompFrame(SUBSCRIBE);
 				frame.addHeader(DESTINATION,
-						StompFrame.encodeHeader("/queue/"+imei()));
+						StompFrame.encodeHeader("/queue/" + imei()));
 				frame.addHeader(ID, connection.nextId());
 				StompFrame response = connection.request(frame);
 
@@ -254,7 +267,7 @@ public class SfogliaRisultatiActivity extends Activity {
 				int bdArrivate = 0;
 				while (bdArrivate < visBancheDati.size()) {
 					StompFrame received = connection.receive();
-					
+
 					System.out.println(received.contentAsString());
 					QueryReply qrep = (QueryReply) xstream.fromXML(received
 							.contentAsString());
@@ -264,10 +277,10 @@ public class SfogliaRisultatiActivity extends Activity {
 						publishProgress(qrep);
 						bdArrivate++;
 					}
-					
+
 				}
 				connection.close();
-				connection=null;
+				connection = null;
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -279,19 +292,19 @@ public class SfogliaRisultatiActivity extends Activity {
 		}
 
 		private String imei() {
-			if (!imei.equals("")) return imei;
+			if (!imei.equals(""))
+				return imei;
 			else {
-				TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-				String possibleImei=tm.getDeviceId();
+				TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+				String possibleImei = tm.getDeviceId();
 				if (possibleImei.contains("0000000")) {
-					imei=fakeImei;
-					
+					imei = fakeImei;
+
+				} else {
+					imei = possibleImei;
+
 				}
-				else {
-					imei=possibleImei;
-					
-				}
-				System.out.println("IMEI--------------"+imei);
+				System.out.println("IMEI--------------" + imei);
 				return imei;
 			}
 		}
