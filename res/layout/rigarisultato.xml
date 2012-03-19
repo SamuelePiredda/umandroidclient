@@ -4,20 +4,20 @@
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
-    <EditText
-        android:id="@+id/keyText"
-        android:layout_width="146dp"
+    <TextView
+        android:id="@+id/k"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top" >
+        android:text="TextView" />
+
+    <EditText
+        android:id="@+id/v"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:inputType="textMultiLine" android:clickable="true" android:focusable="false">
 
         <requestFocus />
     </EditText>
-
-    <EditText
-        android:id="@+id/valueText"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="fill_horizontal"
-        android:inputType="textMultiLine" />
 
 </LinearLayout>

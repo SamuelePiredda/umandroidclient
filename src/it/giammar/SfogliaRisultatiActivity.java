@@ -11,6 +11,7 @@ import it.giammar.pratomodel.QueryRequest;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
@@ -183,46 +185,51 @@ public class SfogliaRisultatiActivity extends Activity {
 	}
 
 	private void associaBancheDatiaViews() {
+		for (Database db: Database.values()) {
 		LinearLayout l = (LinearLayout) inflater.inflate(R.layout.risultati,
 				null);
 		TextView t = (TextView) l.getChildAt(0);
 		ListView lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
-		// ArrayList<String> listItems = new ArrayList<String>();
-		// listItems.add("pippo");
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1);
-		adapter.setNotifyOnChange(true);
+		String[] from = new String[] { "k", "v" };
+		int[] to = new int[] { R.id.k, R.id.v };
+
+		SimpleAdapter adapter = new SimpleAdapter(this,
+				new ArrayList<Map<String, String>>(), R.layout.rigarisultato,
+				from, to);
+
 		lv.setAdapter(adapter);
-		t.setText("ANIA");
-		visBancheDati.put(Database.ANIA, l);
+		t.setText(db.toString());
+		visBancheDati.put(db, l);
+		}
 		// righeBancheDati.put(Database.ANIA, listItems);
 
-		l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
-		t = (TextView) l.getChildAt(0);
-		lv = (ListView) l.getChildAt(1);
-		lv.setOnTouchListener(gestureListener);
-		// listItems = new ArrayList<String>();
-		adapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1);
-		adapter.setNotifyOnChange(true);
-		lv.setAdapter(adapter);
-		t.setText("PRA");
-		visBancheDati.put(Database.PRA, l);
-		// righeBancheDati.put(Database.PRA, listItems);
-
-		l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
-		lv = (ListView) l.getChildAt(1);
-		lv.setOnTouchListener(gestureListener);
-		// listItems = new ArrayList<String>();
-		adapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1);
-		adapter.setNotifyOnChange(true);
-		lv.setAdapter(adapter);
-		t = (TextView) l.getChildAt(0);
-		t.setText("RUBATI");
-		visBancheDati.put(Database.RUBATI, l);
-		// righeBancheDati.put(Database.RUBATI, listItems);
+		//
+		// l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
+		// t = (TextView) l.getChildAt(0);
+		// lv = (ListView) l.getChildAt(1);
+		// lv.setOnTouchListener(gestureListener);
+		// // listItems = new ArrayList<String>();
+		// adapter = new ArrayAdapter<String>(this,
+		// android.R.layout.simple_list_item_1, android.R.id.text1);
+		// adapter.setNotifyOnChange(true);
+		// lv.setAdapter(adapter);
+		// t.setText("PRA");
+		// visBancheDati.put(Database.PRA, l);
+		// // righeBancheDati.put(Database.PRA, listItems);
+		//
+		// l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
+		// lv = (ListView) l.getChildAt(1);
+		// lv.setOnTouchListener(gestureListener);
+		// // listItems = new ArrayList<String>();
+		// adapter = new ArrayAdapter<String>(this,
+		// android.R.layout.simple_list_item_1, android.R.id.text1);
+		// adapter.setNotifyOnChange(true);
+		// lv.setAdapter(adapter);
+		// t = (TextView) l.getChildAt(0);
+		// t.setText("RUBATI");
+		// visBancheDati.put(Database.RUBATI, l);
+		// // righeBancheDati.put(Database.RUBATI, listItems);
 
 	}
 
@@ -312,20 +319,26 @@ public class SfogliaRisultatiActivity extends Activity {
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
 			QueryReply qr = values[0];
-			for (Entry<Integer, Map<String, String>> unRisultato : qr
+			for (Entry<String, List<Map<String, String>>> unRisultato : qr
 					.getRisultati().entrySet()) {
-				for (Entry<String, String> e : unRisultato.getValue()
-						.entrySet()) {
-					String rigaOutput = e.getKey() + " " + e.getValue();
+					
 					LinearLayout rigaLayout = visBancheDati.get(qr
 							.getDaQualeDB());
-					ArrayAdapter<String> righe = (ArrayAdapter<String>) ((ListView) rigaLayout
-							.getChildAt(1)).getAdapter();
+					ListView lv=((ListView) rigaLayout
+							.getChildAt(1));
+					
+					String[] from = new String[] { "k", "v" };
+					int[] to = new int[] { R.id.k, R.id.v };
+
+					SimpleAdapter adapter = new SimpleAdapter(
+							io, unRisultato.getValue(), R.layout.rigarisultato,
+							from, to);
+					
 					// ListView lv= (ListView) rigaLayout.getChildAt(1);
 					// List<String> righeStringa = righeBancheDati.get(qr
 					// .getDaQualeDB());
 					// righeStringa.add(rigaOutput);
-					righe.add(rigaOutput);
+					lv.setAdapter(adapter);
 					// ArrayAdapter<String> adapter = new
 					// ArrayAdapter<String>(this,
 					// android.R.layout.simple_list_item_1, android.R.id.text1,
@@ -349,7 +362,7 @@ public class SfogliaRisultatiActivity extends Activity {
 					// {chiave,valore},unRisultato.getKey());
 					//
 				}
-			}
+		
 			super.onProgressUpdate(values);
 		}
 
