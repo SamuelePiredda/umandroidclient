@@ -26,6 +26,7 @@ import org.fusesource.stomp.codec.StompFrame;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -319,11 +320,14 @@ public class SfogliaRisultatiActivity extends Activity {
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
 			QueryReply qr = values[0];
+			int i=0;
 			for (Entry<String, List<Map<String, String>>> unRisultato : qr
 					.getRisultati().entrySet()) {
 					
 					LinearLayout rigaLayout = visBancheDati.get(qr
 							.getDaQualeDB());
+					if (i==1) rigaLayout.setBackgroundColor(Color.BLUE);
+					i=1-i;
 					ListView lv=((ListView) rigaLayout
 							.getChildAt(1));
 					
