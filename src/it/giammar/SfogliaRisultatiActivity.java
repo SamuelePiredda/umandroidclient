@@ -25,6 +25,7 @@ import org.fusesource.stomp.codec.StompFrame;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -37,7 +38,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -46,7 +48,7 @@ import android.widget.ViewFlipper;
 
 import com.thoughtworks.xstream.XStream;
 
-public class SfogliaRisultatiActivity extends Activity {
+public class SfogliaRisultatiActivity extends Activity implements  OnItemClickListener  {
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
@@ -55,7 +57,7 @@ public class SfogliaRisultatiActivity extends Activity {
 			.toString();
 	private static String imei = "";
 	private GestureDetector gestureDetector;
-	View.OnTouchListener gestureListener;
+	private View.OnTouchListener gestureListener;
 	private Animation slideLeftIn;
 	private Animation slideLeftOut;
 	private Animation slideRightIn;
@@ -135,47 +137,6 @@ public class SfogliaRisultatiActivity extends Activity {
 		eq = new EffettuaQuery();
 		eq.execute(qr);
 
-		// ListView listView = (ListView) inflater.inflate(R.layout.risultati,
-		// null);
-		//
-		// String[] values = new String[] { "Android", "iPhone",
-		// "WindowsMobile",
-		// "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
-		// "Linux", "OS/2" };
-		//
-		// // First paramenter - Context
-		// // Second parameter - Layout for the row
-		// // Third parameter - ID of the View to which the data is written
-		// // Forth - the Array of data
-		// ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-		// android.R.layout.simple_list_item_1, android.R.id.text1, values);
-		//
-		// // Assign adapter to ListView
-		// listView.setAdapter(adapter);
-		//
-		// ListView listView2 = (ListView) inflater.inflate(R.layout.risultati,
-		// null);
-		// String[] values2 = new String[] { "asdf", "cccc", "ccczxcvzxcv",
-		// "zxcvz", "asdfasdfa", "asdfasdf", "adsfadsf",
-		// "Max zxcvzxcvzxcv X", "zxb fg", "OSxcvzxcvzxcvzxcvzxcv2" };
-		//
-		// // First paramenter - Context
-		// // Second parameter - Layout for the ro
-		// // Third parameter - ID of the View to which the data is written
-		// // Forth - the Array of data
-		// ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(this,
-		// android.R.layout.simple_list_item_1, android.R.id.text1,
-		// values2);
-		//
-		// // Assign adapter to ListView
-		// listView2.setAdapter(adapter2);
-		// viewFlipper.addView(listView);
-		//
-		// viewFlipper.addView(listView2);
-		//
-		// listView.setOnTouchListener(gestureListener);
-		// listView2.setOnTouchListener(gestureListener);
-		// super.onCreate(savedInstanceState);
 	}
 
 	private void riempiFlipperconBancheDati() {
@@ -192,6 +153,7 @@ public class SfogliaRisultatiActivity extends Activity {
 		TextView t = (TextView) l.getChildAt(0);
 		ListView lv = (ListView) l.getChildAt(1);
 		lv.setOnTouchListener(gestureListener);
+		lv.setOnItemClickListener(this);
 		String[] from = new String[] { "k", "v" };
 		int[] to = new int[] { R.id.k, R.id.v };
 
@@ -203,34 +165,7 @@ public class SfogliaRisultatiActivity extends Activity {
 		t.setText(db.toString());
 		visBancheDati.put(db, l);
 		}
-		// righeBancheDati.put(Database.ANIA, listItems);
-
-		//
-		// l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
-		// t = (TextView) l.getChildAt(0);
-		// lv = (ListView) l.getChildAt(1);
-		// lv.setOnTouchListener(gestureListener);
-		// // listItems = new ArrayList<String>();
-		// adapter = new ArrayAdapter<String>(this,
-		// android.R.layout.simple_list_item_1, android.R.id.text1);
-		// adapter.setNotifyOnChange(true);
-		// lv.setAdapter(adapter);
-		// t.setText("PRA");
-		// visBancheDati.put(Database.PRA, l);
-		// // righeBancheDati.put(Database.PRA, listItems);
-		//
-		// l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
-		// lv = (ListView) l.getChildAt(1);
-		// lv.setOnTouchListener(gestureListener);
-		// // listItems = new ArrayList<String>();
-		// adapter = new ArrayAdapter<String>(this,
-		// android.R.layout.simple_list_item_1, android.R.id.text1);
-		// adapter.setNotifyOnChange(true);
-		// lv.setAdapter(adapter);
-		// t = (TextView) l.getChildAt(0);
-		// t.setText("RUBATI");
-		// visBancheDati.put(Database.RUBATI, l);
-		// // righeBancheDati.put(Database.RUBATI, listItems);
+		
 
 	}
 
@@ -338,58 +273,15 @@ public class SfogliaRisultatiActivity extends Activity {
 							io, unRisultato.getValue(), R.layout.rigarisultato,
 							from, to);
 					
-					// ListView lv= (ListView) rigaLayout.getChildAt(1);
-					// List<String> righeStringa = righeBancheDati.get(qr
-					// .getDaQualeDB());
-					// righeStringa.add(rigaOutput);
+					
 					lv.setAdapter(adapter);
-					// ArrayAdapter<String> adapter = new
-					// ArrayAdapter<String>(this,
-					// android.R.layout.simple_list_item_1, android.R.id.text1,
-					// righeStringa);
-					// lv.setAdapter(adapter);
-					// System.out.println(righeStringa);
-					// righe.notifyDataSetChanged();
-					// Table t =
-					// searchWindow.getTabelle().get(qr.getDaQualeDB());
-					// RichTextArea chiave = new RichTextArea();
-					// chiave.setValue(e.getKey());
-					// chiave.setSizeFull();
-					// chiave.setReadOnly(true);
-					// RichTextArea valore = new RichTextArea();
-					// valore.setValue(e.getValue());
-					// valore.setSizeFull();
-					// valore.setReadOnly(true);
-					//
-					//
-					// t.addItem(new Object[]
-					// {chiave,valore},unRisultato.getKey());
-					//
+					
 				}
 		
 			super.onProgressUpdate(values);
 		}
 
-		// @Override
-		// protected void onPostExecute(Void result) {
-		// super.onPostExecute(result);
-		// String[] values = new String[] { "Android", "iPhone",
-		// "WindowsMobile", "Blackberry", "WebOS", "Ubuntu",
-		// "Windows7", "Max OS X", "Linux", "OS/2" };
-		//
-		// // First paramenter - Context
-		// // Second parameter - Layout for the row
-		// // Third parameter - ID of the View to which the data is written
-		// // Forth - the Array of data
-		// ArrayAdapter<String> adapter = new ArrayAdapter<String>(io,
-		// android.R.layout.simple_list_item_1, android.R.id.text1,
-		// values);
-		//
-		// // Assign adapter to ListView
-		// ListView x = (ListView) visBancheDati.entrySet().iterator().next()
-		// .getValue().getChildAt(1);
-		// x.setAdapter(adapter);
-		// }
+	
 
 	}
 
@@ -420,5 +312,19 @@ public class SfogliaRisultatiActivity extends Activity {
 			return false;
 		}
 	}
+
+	
+
+	@Override
+	public void onItemClick(AdapterView<?> listView, View arg1, int position, long arg3) {
+		Map<String, String> selection = (Map<String, String>) listView.getItemAtPosition(position);
+		String nuovaRicerca=selection.get("v");
+		Intent sr = new Intent(this, UMAndroidClientActivity.class);
+		sr.putExtra("query", nuovaRicerca);
+		this.startActivity(sr);
+		
+	}
+
+	
 
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayout1"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical" >
@@ -8,35 +9,45 @@
         android:id="@+id/query"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/linearLayout1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
         android:layout_weight="1" >
 
         <requestFocus />
     </EditText>
 
-    <LinearLayout
-        android:id="@+id/linearLayout1"
-        android:layout_width="match_parent"
+    <CheckBox
+        android:id="@+id/aPagamento"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1" >
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/query"
+        android:text="€" />
 
-        <CheckBox
-            android:id="@+id/aPagamento"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="€" />
+    <Button
+        android:id="@+id/cerca"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/aPagamento"
+        android:layout_below="@+id/query"
+        android:layout_toLeftOf="@+id/bancaDati"
+        android:layout_toRightOf="@+id/aPagamento"
+        android:text="Cerca" />
 
-        <Button
-            android:id="@+id/cerca"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.74"
-            android:text="Cerca" />
+    <Spinner
+        android:id="@+id/tipoRicerca"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/aPagamento"
+        android:layout_alignParentRight="true" />
 
-        <Spinner
-            android:id="@+id/bancaDati"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-    </LinearLayout>
+    <Spinner
+        android:id="@+id/bancaDati"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/cerca"
+        android:layout_alignTop="@+id/cerca"
+        android:layout_toLeftOf="@+id/tipoRicerca" />
 
-</LinearLayout>
+</RelativeLayout>
