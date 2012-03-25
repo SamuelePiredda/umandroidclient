@@ -127,8 +127,8 @@ public class UMAndroidClientActivity extends Activity implements
 		qr.setAutomatic(isAuto);
 		//TODO a pagamento!!!
 		if (isAuto == false) {
-			qr.setTipoScelto((Tipo) tipoRicerca.getSelectedItem());
-			qr.getEseguiIn().add(scelto);
+			qr.addDove(scelto, (Tipo) tipoRicerca.getSelectedItem());
+			
 		}
 	}
 

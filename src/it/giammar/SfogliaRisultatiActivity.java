@@ -53,7 +53,7 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private static Random randomGenerator = new Random();
-	private static String fakeImei = new Integer(randomGenerator.nextInt())
+	private static String fakeImei =  Integer.valueOf(randomGenerator.nextInt())
 			.toString();
 	private static String imei = "";
 	private GestureDetector gestureDetector;

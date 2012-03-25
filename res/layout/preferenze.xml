@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/password"
         android:layout_alignParentRight="true"
-        android:layout_weight="0.3" />
+         />
 
     <Button
         android:id="@+id/salva"
