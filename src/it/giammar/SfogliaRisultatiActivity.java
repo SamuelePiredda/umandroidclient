@@ -128,7 +128,7 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 		viewFlipper.setOnTouchListener(gestureListener);
 
 		associaBancheDatiaViews();
-		riempiFlipperconBancheDati();
+//		riempiFlipperconBancheDati();
 
 		sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);
 
@@ -139,6 +139,7 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 
 	}
 
+	@Deprecated
 	private void riempiFlipperconBancheDati() {
 		for (Entry<Database, LinearLayout> es : visBancheDati.entrySet()) {
 			viewFlipper.addView(es.getValue());
@@ -256,11 +257,13 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 		protected void onProgressUpdate(QueryReply... values) {
 			QueryReply qr = values[0];
 			int i=0;
+			LinearLayout rigaLayout = visBancheDati.get(qr
+					.getDaQualeDB());
+			viewFlipper.addView(rigaLayout);
 			for (Entry<String, List<Map<String, String>>> unRisultato : qr
 					.getRisultati().entrySet()) {
 					
-					LinearLayout rigaLayout = visBancheDati.get(qr
-							.getDaQualeDB());
+					
 					if (i==1) rigaLayout.setBackgroundColor(Color.BLUE);
 					i=1-i;
 					ListView lv=((ListView) rigaLayout
