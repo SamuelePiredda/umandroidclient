@@ -42,6 +42,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
@@ -63,6 +64,7 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 	private Animation slideRightIn;
 	private Animation slideRightOut;
 	private ViewFlipper viewFlipper;
+	private ProgressBar progress;
 	private QueryRequest qr;
 	LayoutInflater inflater;
 	private Activity io = this;
@@ -108,6 +110,7 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 		System.out.println(getIntent().getExtras().getString("query"));
 		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper1);
+		progress = (ProgressBar) findViewById(R.id.progressBar1);
 		slideLeftIn = AnimationUtils.loadAnimation(this,
 				android.R.anim.slide_in_left);
 		slideLeftOut = AnimationUtils.loadAnimation(this,
@@ -281,7 +284,7 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 					
 				}
 		
-			super.onProgressUpdate(values);
+//			super.onProgressUpdate(values);
 		}
 
 	
