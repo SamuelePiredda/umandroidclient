@@ -9,7 +9,10 @@ import it.giammar.pratomodel.QueryReply;
 import it.giammar.pratomodel.QueryReply.Database;
 import it.giammar.pratomodel.QueryRequest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +21,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import org.apache.camel.component.shiro.security.ShiroSecurityToken;
+import org.apache.shiro.crypto.AesCipherService;
+import org.apache.shiro.crypto.CipherService;
+import org.apache.shiro.util.ByteSource;
 import org.fusesource.hawtbuf.AsciiBuffer;
 import org.fusesource.stomp.client.BlockingConnection;
 import org.fusesource.stomp.client.Stomp;
@@ -49,12 +56,13 @@ import android.widget.ViewFlipper;
 
 import com.thoughtworks.xstream.XStream;
 
-public class SfogliaRisultatiActivity extends Activity implements  OnItemClickListener  {
+public class SfogliaRisultatiActivity extends Activity implements
+		OnItemClickListener {
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private static Random randomGenerator = new Random();
-	private static String fakeImei =  Integer.valueOf(randomGenerator.nextInt())
+	private static String fakeImei = Integer.valueOf(randomGenerator.nextInt())
 			.toString();
 	private static String imei = "";
 	private GestureDetector gestureDetector;
@@ -73,6 +81,10 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 	private SharedPreferences sp;
 	protected BlockingConnection connection;
 	private EffettuaQuery eq;
+	final byte[] passPhrase = { (byte) 0x08, (byte) 0x09, (byte) 0x0A,
+			(byte) 0x0B, (byte) 0x0C, (byte) 0x0D, (byte) 0x0E, (byte) 0x0F,
+			(byte) 0x10, (byte) 0x11, (byte) 0x12, (byte) 0x13, (byte) 0x14,
+			(byte) 0x15, (byte) 0x16, (byte) 0x17 };
 
 	@Override
 	public void onBackPressed() {
@@ -131,7 +143,7 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 		viewFlipper.setOnTouchListener(gestureListener);
 
 		associaBancheDatiaViews();
-//		riempiFlipperconBancheDati();
+		// riempiFlipperconBancheDati();
 
 		sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);
 
@@ -151,25 +163,24 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 	}
 
 	private void associaBancheDatiaViews() {
-		for (Database db: Database.values()) {
-		LinearLayout l = (LinearLayout) inflater.inflate(R.layout.risultati,
-				null);
-		TextView t = (TextView) l.getChildAt(0);
-		ListView lv = (ListView) l.getChildAt(1);
-		lv.setOnTouchListener(gestureListener);
-		lv.setOnItemClickListener(this);
-		String[] from = new String[] { "k", "v" };
-		int[] to = new int[] { R.id.k, R.id.v };
+		for (Database db : Database.values()) {
+			LinearLayout l = (LinearLayout) inflater.inflate(
+					R.layout.risultati, null);
+			TextView t = (TextView) l.getChildAt(0);
+			ListView lv = (ListView) l.getChildAt(1);
+			lv.setOnTouchListener(gestureListener);
+			lv.setOnItemClickListener(this);
+			String[] from = new String[] { "k", "v" };
+			int[] to = new int[] { R.id.k, R.id.v };
 
-		SimpleAdapter adapter = new SimpleAdapter(this,
-				new ArrayList<Map<String, String>>(), R.layout.rigarisultato,
-				from, to);
+			SimpleAdapter adapter = new SimpleAdapter(this,
+					new ArrayList<Map<String, String>>(),
+					R.layout.rigarisultato, from, to);
 
-		lv.setAdapter(adapter);
-		t.setText(db.toString());
-		visBancheDati.put(db, l);
+			lv.setAdapter(adapter);
+			t.setText(db.toString());
+			visBancheDati.put(db, l);
 		}
-		
 
 	}
 
@@ -206,6 +217,7 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 				frame.addHeader(MESSAGE_ID, StompFrame.encodeHeader("test"));
 				frame.addHeader(StompFrame.encodeHeader("stomp"),
 						StompFrame.encodeHeader("yes"));
+				autenticati(frame);
 				frame.addHeader(
 						StompFrame.encodeHeader("CamelJmsDestinationName"),
 						StompFrame.encodeHeader(imei()));
@@ -234,8 +246,26 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			return null;
+		}
+
+		private void autenticati(StompFrame frame) throws Exception {
+			ShiroSecurityToken securityToken = new ShiroSecurityToken(
+					sp.getString("utente", ""), sp.getString("password",""));
+			CipherService cipherService = new AesCipherService();
+			ByteArrayOutputStream stream = new  ByteArrayOutputStream();
+	        ObjectOutput serialStream = new ObjectOutputStream(stream);
+	        serialStream.writeObject(securityToken);
+	        ByteSource byteSource = cipherService.encrypt(stream.toByteArray(), passPhrase);
+	        serialStream.close();
+	        stream.close();
+			
+			frame.addHeader(StompFrame.encodeHeader("SHIRO_SECURITY_TOKEN"),
+					StompFrame.encodeHeader(byteSource.toBase64()));
 		}
 
 		private String imei() {
@@ -259,35 +289,30 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
 			QueryReply qr = values[0];
-			int i=0;
-			LinearLayout rigaLayout = visBancheDati.get(qr
-					.getDaQualeDB());
+			int i = 0;
+			LinearLayout rigaLayout = visBancheDati.get(qr.getDaQualeDB());
 			viewFlipper.addView(rigaLayout);
 			for (Entry<String, List<Map<String, String>>> unRisultato : qr
 					.getRisultati().entrySet()) {
-					
-					
-					if (i==1) rigaLayout.setBackgroundColor(Color.BLUE);
-					i=1-i;
-					ListView lv=((ListView) rigaLayout
-							.getChildAt(1));
-					
-					String[] from = new String[] { "k", "v" };
-					int[] to = new int[] { R.id.k, R.id.v };
 
-					SimpleAdapter adapter = new SimpleAdapter(
-							io, unRisultato.getValue(), R.layout.rigarisultato,
-							from, to);
-					
-					
-					lv.setAdapter(adapter);
-					
-				}
-		
-//			super.onProgressUpdate(values);
+				if (i == 1)
+					rigaLayout.setBackgroundColor(Color.BLUE);
+				i = 1 - i;
+				ListView lv = ((ListView) rigaLayout.getChildAt(1));
+
+				String[] from = new String[] { "k", "v" };
+				int[] to = new int[] { R.id.k, R.id.v };
+
+				SimpleAdapter adapter = new SimpleAdapter(io,
+						unRisultato.getValue(), R.layout.rigarisultato, from,
+						to);
+
+				lv.setAdapter(adapter);
+
+			}
+
+			// super.onProgressUpdate(values);
 		}
-
-	
 
 	}
 
@@ -319,18 +344,16 @@ public class SfogliaRisultatiActivity extends Activity implements  OnItemClickLi
 		}
 	}
 
-	
-
 	@Override
-	public void onItemClick(AdapterView<?> listView, View arg1, int position, long arg3) {
-		Map<String, String> selection = (Map<String, String>) listView.getItemAtPosition(position);
-		String nuovaRicerca=selection.get("v");
+	public void onItemClick(AdapterView<?> listView, View arg1, int position,
+			long arg3) {
+		Map<String, String> selection = (Map<String, String>) listView
+				.getItemAtPosition(position);
+		String nuovaRicerca = selection.get("v");
 		Intent sr = new Intent(this, UMAndroidClientActivity.class);
 		sr.putExtra("query", nuovaRicerca);
 		this.startActivity(sr);
-		
-	}
 
-	
+	}
 
 }
