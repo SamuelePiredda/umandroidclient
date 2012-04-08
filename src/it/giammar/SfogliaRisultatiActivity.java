@@ -9,10 +9,7 @@ import it.giammar.pratomodel.QueryReply;
 import it.giammar.pratomodel.QueryReply.Database;
 import it.giammar.pratomodel.QueryRequest;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,10 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import org.apache.camel.component.shiro.security.ShiroSecurityToken;
-import org.apache.shiro.crypto.AesCipherService;
-import org.apache.shiro.crypto.CipherService;
-import org.apache.shiro.util.ByteSource;
 import org.fusesource.hawtbuf.AsciiBuffer;
 import org.fusesource.stomp.client.BlockingConnection;
 import org.fusesource.stomp.client.Stomp;
@@ -209,6 +202,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 				QueryRequest q = params[0];
 				q.setVersione(randomGenerator.nextInt());
+				q.setUserName(sp.getString("utente", ""));
+				q.setPassword(sp.getString("password",""));
 				XStream xstream = new XStream();
 
 				frame = new StompFrame(SEND);
@@ -217,7 +212,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				frame.addHeader(MESSAGE_ID, StompFrame.encodeHeader("test"));
 				frame.addHeader(StompFrame.encodeHeader("stomp"),
 						StompFrame.encodeHeader("yes"));
-				autenticati(frame);
+//				autenticati(frame);
 				frame.addHeader(
 						StompFrame.encodeHeader("CamelJmsDestinationName"),
 						StompFrame.encodeHeader(imei()));
@@ -253,20 +248,24 @@ public class SfogliaRisultatiActivity extends Activity implements
 			return null;
 		}
 
-		private void autenticati(StompFrame frame) throws Exception {
-			ShiroSecurityToken securityToken = new ShiroSecurityToken(
-					sp.getString("utente", ""), sp.getString("password",""));
-			CipherService cipherService = new AesCipherService();
-			ByteArrayOutputStream stream = new  ByteArrayOutputStream();
-	        ObjectOutput serialStream = new ObjectOutputStream(stream);
-	        serialStream.writeObject(securityToken);
-	        ByteSource byteSource = cipherService.encrypt(stream.toByteArray(), passPhrase);
-	        serialStream.close();
-	        stream.close();
-			
-			frame.addHeader(StompFrame.encodeHeader("SHIRO_SECURITY_TOKEN"),
-					StompFrame.encodeHeader(byteSource.toBase64()));
-		}
+//		private void autenticati(StompFrame frame) throws Exception {
+//			ShiroSecurityToken securityToken = new ShiroSecurityToken(
+//					sp.getString("utente", ""), sp.getString("password",""));
+//			CipherService cipherService = new AesCipherService();
+//			ByteArrayOutputStream stream = new  ByteArrayOutputStream();
+//	        ObjectOutput serialStream = new ObjectOutputStream(stream);
+//	        serialStream.writeObject(securityToken);
+//	        ByteSource byteSource = cipherService.encrypt(stream.toByteArray(), passPhrase);
+//	        serialStream.close();
+//	        stream.close();
+//	        String encodedString = StringUtils.newStringUtf8((Base64.encodeBase64(byteSource.getBytes(),false)));
+//	        String safeString = encodedString.replace('+','-').replace('/','_');
+//
+//			frame.addHeader(StompFrame.encodeHeader("SHIRO_SECURITY_TOKEN"),
+//					new AsciiBuffer(encodedString));
+//			System.out.println(StompFrame.encodeHeader(safeString).length);
+//			System.out.println(StompFrame.encodeHeader(safeString));
+//		}
 
 		private String imei() {
 			if (!imei.equals(""))
