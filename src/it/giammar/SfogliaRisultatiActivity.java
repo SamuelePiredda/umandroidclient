@@ -78,7 +78,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 			(byte) 0x0B, (byte) 0x0C, (byte) 0x0D, (byte) 0x0E, (byte) 0x0F,
 			(byte) 0x10, (byte) 0x11, (byte) 0x12, (byte) 0x13, (byte) 0x14,
 			(byte) 0x15, (byte) 0x16, (byte) 0x17 };
-
+	private int totaleBD;
+	private int bdArrivate;
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
@@ -218,8 +219,9 @@ public class SfogliaRisultatiActivity extends Activity implements
 						StompFrame.encodeHeader(imei()));
 				frame.content(new AsciiBuffer(xstream.toXML(q)));
 				connection.send(frame);
-				int bdArrivate = 0;
-				while (bdArrivate < visBancheDati.size()) {
+				bdArrivate = 0;
+				totaleBD=1; // il loop deve continuare finche' non arriva almeno un risultato valido
+				do {
 					StompFrame received = connection.receive();
 
 					System.out.println(received.contentAsString());
@@ -228,11 +230,14 @@ public class SfogliaRisultatiActivity extends Activity implements
 					System.out.println(qr.getVersione());
 					System.out.println(qrep.getVersione());
 					if (qr.getVersione() == qrep.getVersione()) {
-						publishProgress(qrep);
+						
 						bdArrivate++;
+						totaleBD=qrep.getTotRisult();
+						System.out.println(bdArrivate+"/"+totaleBD);
+						publishProgress(qrep);
 					}
 
-				}
+				} while (bdArrivate<totaleBD);
 				connection.close();
 				connection = null;
 			} catch (URISyntaxException e) {
@@ -309,7 +314,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				lv.setAdapter(adapter);
 
 			}
-
+			progress.setProgress(100*bdArrivate/totaleBD);
 			// super.onProgressUpdate(values);
 		}
 
