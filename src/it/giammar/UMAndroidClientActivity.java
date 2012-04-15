@@ -53,7 +53,7 @@ public class UMAndroidClientActivity extends Activity implements
 		opzDiRicerca.put(Database.ANAGRAFE, new Tipo[] { Tipo.NC, Tipo.CF,Tipo.IND });
 		opzDiRicerca.put(Database.ANIA, new Tipo[] { Tipo.TARGA });
 		opzDiRicerca.put(Database.CACOMM, new Tipo[] {Tipo.NC,Tipo.CF,Tipo.IND,Tipo.GEN});
-		opzDiRicerca.put(Database.CARRABILI, new Tipo[] {Tipo.NC,Tipo.IND,Tipo.PERM});
+		opzDiRicerca.put(Database.CARRABILI, new Tipo[] {Tipo.NC,Tipo.IND,Tipo.CARR});
 		opzDiRicerca.put(Database.MCTC, new Tipo[] {Tipo.CF,Tipo.TARGA,Tipo.PATENTE});
 		opzDiRicerca.put(Database.OTV, new Tipo[] {Tipo.IND,Tipo.GEN});
 		opzDiRicerca.put(Database.PRA, new Tipo[] { Tipo.TARGA });
