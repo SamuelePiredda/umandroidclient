@@ -293,22 +293,21 @@ public class SfogliaRisultatiActivity extends Activity implements
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
 			QueryReply qr = values[0];
-			int i = 0;
+			int layout=R.layout.rigarisultato2;
 			LinearLayout rigaLayout = visBancheDati.get(qr.getDaQualeDB());
 			viewFlipper.addView(rigaLayout);
 			for (Entry<String, List<Map<String, String>>> unRisultato : qr
 					.getRisultati().entrySet()) {
 
-				if (i == 1)
-					rigaLayout.setBackgroundColor(Color.BLUE);
-				i = 1 - i;
+				
 				ListView lv = ((ListView) rigaLayout.getChildAt(1));
-
+				if (layout==R.layout.rigarisultato) layout=R.layout.rigarisultato2;
+				else layout=R.layout.rigarisultato;
 				String[] from = new String[] { "k", "v" };
 				int[] to = new int[] { R.id.k, R.id.v };
 
 				SimpleAdapter adapter = new SimpleAdapter(io,
-						unRisultato.getValue(), R.layout.rigarisultato, from,
+						unRisultato.getValue(), layout, from,
 						to);
 
 				lv.setAdapter(adapter);
