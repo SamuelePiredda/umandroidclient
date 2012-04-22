@@ -27,7 +27,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -40,6 +39,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -47,6 +47,7 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
+import com.commonsware.cwac.merge.MergeAdapter;
 import com.thoughtworks.xstream.XStream;
 
 public class SfogliaRisultatiActivity extends Activity implements
@@ -167,10 +168,10 @@ public class SfogliaRisultatiActivity extends Activity implements
 			String[] from = new String[] { "k", "v" };
 			int[] to = new int[] { R.id.k, R.id.v };
 
-			SimpleAdapter adapter = new SimpleAdapter(this,
-					new ArrayList<Map<String, String>>(),
-					R.layout.rigarisultato, from, to);
-
+//			SimpleAdapter adapter = new SimpleAdapter(this,
+//					new ArrayList<Map<String, String>>(),
+//					R.layout.rigarisultato, from, to);
+			MergeAdapter adapter= new MergeAdapter(); 
 			lv.setAdapter(adapter);
 			t.setText(db.toString());
 			visBancheDati.put(db, l);
@@ -294,13 +295,13 @@ public class SfogliaRisultatiActivity extends Activity implements
 		protected void onProgressUpdate(QueryReply... values) {
 			QueryReply qr = values[0];
 			int layout=R.layout.rigarisultato2;
-			LinearLayout rigaLayout = visBancheDati.get(qr.getDaQualeDB());
-			viewFlipper.addView(rigaLayout);
+			LinearLayout risultati = visBancheDati.get(qr.getDaQualeDB());
+			viewFlipper.addView(risultati);
 			for (Entry<String, List<Map<String, String>>> unRisultato : qr
 					.getRisultati().entrySet()) {
 
 				
-				ListView lv = ((ListView) rigaLayout.getChildAt(1));
+				ListView lv = ((ListView) risultati.getChildAt(1));
 				if (layout==R.layout.rigarisultato) layout=R.layout.rigarisultato2;
 				else layout=R.layout.rigarisultato;
 				String[] from = new String[] { "k", "v" };
@@ -309,9 +310,12 @@ public class SfogliaRisultatiActivity extends Activity implements
 				SimpleAdapter adapter = new SimpleAdapter(io,
 						unRisultato.getValue(), layout, from,
 						to);
-
-				lv.setAdapter(adapter);
-
+				MergeAdapter ma= (MergeAdapter) lv.getAdapter();
+				ma.addView(inflater.inflate(R.layout.separatore,null));
+				ma.addAdapter(adapter);
+				ma.notifyDataSetChanged();
+				lv.setAdapter(ma);
+				
 			}
 			progress.setProgress(100*bdArrivate/totaleBD);
 			// super.onProgressUpdate(values);

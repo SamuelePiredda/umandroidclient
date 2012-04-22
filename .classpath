@@ -11,5 +11,7 @@
 	<classpathentry kind="lib" path="libs/hawtdispatch-transport-1.6.jar"/>
 	<classpathentry kind="lib" path="libs/stompjms-client-1.6.jar"/>
 	<classpathentry kind="lib" path="libs/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="libs/CWAC-MergeAdapter.jar"/>
+	<classpathentry kind="lib" path="libs/CWAC-SackOfViewsAdapter.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
