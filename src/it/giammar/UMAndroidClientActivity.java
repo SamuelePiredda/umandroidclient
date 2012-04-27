@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -37,6 +38,13 @@ public class UMAndroidClientActivity extends Activity implements
 	private boolean isAuto = false;
 	private Database scelto;
 
+	private EditText nascita;
+	private EditText comune;
+	private EditText provincia;
+	private TextView textView1;
+	private TextView textView2;
+	private TextView textView3;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -50,15 +58,21 @@ public class UMAndroidClientActivity extends Activity implements
 
 	private void riempiOpzioniDiRicerca() {
 		opzDiRicerca = new HashMap<Database, Tipo[]>();
-		opzDiRicerca.put(Database.ANAGRAFE, new Tipo[] { Tipo.NC, Tipo.CF,Tipo.IND });
+		opzDiRicerca.put(Database.ANAGRAFE, new Tipo[] { Tipo.NC, Tipo.CF,
+				Tipo.IND });
 		opzDiRicerca.put(Database.ANIA, new Tipo[] { Tipo.TARGA });
-		opzDiRicerca.put(Database.CACOMM, new Tipo[] {Tipo.NC,Tipo.CF,Tipo.IND,Tipo.GEN});
-		opzDiRicerca.put(Database.CARRABILI, new Tipo[] {Tipo.NC,Tipo.IND,Tipo.CARR});
-		opzDiRicerca.put(Database.MCTC, new Tipo[] {Tipo.CF,Tipo.TARGA,Tipo.PATENTE});
-		opzDiRicerca.put(Database.OTV, new Tipo[] {Tipo.IND,Tipo.GEN});
+		opzDiRicerca.put(Database.CACOMM, new Tipo[] { Tipo.NC, Tipo.CF,
+				Tipo.IND, Tipo.GEN });
+		opzDiRicerca.put(Database.CARRABILI, new Tipo[] { Tipo.NC, Tipo.IND,
+				Tipo.CARR });
+		opzDiRicerca.put(Database.MCTC, new Tipo[] { Tipo.CF, Tipo.TARGA,
+				Tipo.PATENTE });
+		opzDiRicerca.put(Database.OTV, new Tipo[] { Tipo.IND, Tipo.GEN });
 		opzDiRicerca.put(Database.PRA, new Tipo[] { Tipo.TARGA });
-		opzDiRicerca.put(Database.RUBATI, new Tipo[] { Tipo.TARGA,Tipo.TELAIO });
-		opzDiRicerca.put(Database.ZTL, new Tipo[] {Tipo.NC,Tipo.CF,Tipo.TARGA,Tipo.PERM});
+		opzDiRicerca.put(Database.RUBATI,
+				new Tipo[] { Tipo.TARGA, Tipo.TELAIO });
+		opzDiRicerca.put(Database.ZTL, new Tipo[] { Tipo.NC, Tipo.CF,
+				Tipo.TARGA, Tipo.PERM });
 	}
 
 	@Override
@@ -75,17 +89,6 @@ public class UMAndroidClientActivity extends Activity implements
 		return true;
 	}
 
-	// private void setDefaultLogin() {
-	// SharedPreferences p=this.getPreferences(Context.MODE_PRIVATE);
-	// Editor e = p.edit();
-	// if (!p.contains("userName")) e.putString("userName", "test");
-	// if (!p.contains("password")) e.putString("password", "test");
-	// if (!p.contains("server")) e.putString("server",
-	// "ufficiomobile.comune.prato.it");
-	// if (!p.contains("port")) e.putString("port", "61613");
-	// e.commit();
-	// }
-
 	private void preparaWidgets() {
 		cerca = (Button) findViewById(R.id.cerca);
 		query = (EditText) findViewById(R.id.query);
@@ -93,8 +96,16 @@ public class UMAndroidClientActivity extends Activity implements
 		bancaDati = (Spinner) findViewById(R.id.bancaDati);
 		tipoRicerca = (Spinner) findViewById(R.id.tipoRicerca);
 		cerca.setOnClickListener(this);
-		Bundle nuovaRicerca=getIntent().getExtras();
-		if (nuovaRicerca!=null) query.setText(nuovaRicerca.getString("query"));
+		nascita = (EditText) findViewById(R.id.nascita);
+		comune = (EditText) findViewById(R.id.comune);
+		provincia = (EditText) findViewById(R.id.provincia);
+		textView1 = (TextView) findViewById(R.id.textView1);
+		textView2 = (TextView) findViewById(R.id.textView2);
+		textView3 = (TextView) findViewById(R.id.textView3);
+		
+		Bundle nuovaRicerca = getIntent().getExtras();
+		if (nuovaRicerca != null)
+			query.setText(nuovaRicerca.getString("query"));
 
 		ArrayList<String> dbs = new ArrayList<String>();
 		dbs.add("Auto");
@@ -124,17 +135,21 @@ public class UMAndroidClientActivity extends Activity implements
 
 	private void preparaQuery(QueryRequest qr) {
 		qr.setQuery(query.getText().toString());
+		qr.setComune(comune.getText().toString());
+//		qr.setNascita(nascita.getEditableText().toString());
+		qr.setProvincia(provincia.getText().toString());
 		qr.setAutomatic(isAuto);
-		//TODO a pagamento!!!
+		// TODO a pagamento!!!
 		if (isAuto == false) {
 			qr.addDove(scelto, (Tipo) tipoRicerca.getSelectedItem());
-			
+
 		}
 	}
 
 	@Override
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
 			long arg3) {
+
 		if (arg2 == 0) {
 			isAuto = true;
 			tipoRicerca.setEnabled(false);
@@ -146,7 +161,26 @@ public class UMAndroidClientActivity extends Activity implements
 					android.R.layout.simple_spinner_item, opzDiRicerca
 							.get(scelto)));
 		}
+		if (isAuto== false ||(scelto!=null &&scelto.equals(Database.MCTC))) {
+			nascita.setVisibility(View.VISIBLE);
+			comune.setVisibility(View.VISIBLE);
+			provincia.setVisibility(View.VISIBLE);
+			textView1.setVisibility(View.VISIBLE);
+			textView2.setVisibility(View.VISIBLE);
+			textView3.setVisibility(View.VISIBLE);
+		}
+		else {
+			nascita.setVisibility(View.INVISIBLE);
+			comune.setVisibility(View.INVISIBLE);
+			provincia.setVisibility(View.INVISIBLE);
+			textView1.setVisibility(View.INVISIBLE);
+			textView2.setVisibility(View.INVISIBLE);
+			textView3.setVisibility(View.INVISIBLE);
+			
+		}
 		System.out.println(isAuto);
+		
+
 	}
 
 	@Override
