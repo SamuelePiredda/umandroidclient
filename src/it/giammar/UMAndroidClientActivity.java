@@ -4,6 +4,8 @@ import it.giammar.pratomodel.QueryReply.Database;
 import it.giammar.pratomodel.QueryRequest;
 import it.giammar.pratomodel.QueryRequest.Tipo;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +46,7 @@ public class UMAndroidClientActivity extends Activity implements
 	private TextView textView1;
 	private TextView textView2;
 	private TextView textView3;
-	
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -102,7 +104,7 @@ public class UMAndroidClientActivity extends Activity implements
 		textView1 = (TextView) findViewById(R.id.textView1);
 		textView2 = (TextView) findViewById(R.id.textView2);
 		textView3 = (TextView) findViewById(R.id.textView3);
-		
+
 		Bundle nuovaRicerca = getIntent().getExtras();
 		if (nuovaRicerca != null)
 			query.setText(nuovaRicerca.getString("query"));
@@ -121,11 +123,13 @@ public class UMAndroidClientActivity extends Activity implements
 		// switch (v.getId()) {
 		// case R.id.cerca:
 		QueryRequest qr = new QueryRequest();
-		preparaQuery(qr);
-		Intent sr = new Intent(this, SfogliaRisultatiActivity.class);
-		XStream xstream = new XStream();
-		sr.putExtra("query", xstream.toXML(qr));
-		this.startActivity(sr);
+		boolean ok = preparaQuery(qr);
+		if (ok) {
+			Intent sr = new Intent(this, SfogliaRisultatiActivity.class);
+			XStream xstream = new XStream();
+			sr.putExtra("query", xstream.toXML(qr));
+			this.startActivity(sr);
+		}
 		// break;
 		// case R.id.bancaDati:
 		//
@@ -133,10 +137,24 @@ public class UMAndroidClientActivity extends Activity implements
 		// }
 	}
 
-	private void preparaQuery(QueryRequest qr) {
+	private boolean preparaQuery(QueryRequest qr) {
+		boolean ok = true;
+		// TODO finire validazioni campi
+		if ("".equals(query.getText().toString())) {
+			query.setError("testo obbligatorio");
+			ok = false;
+		}
 		qr.setQuery(query.getText().toString());
 		qr.setComune(comune.getText().toString());
-//		qr.setNascita(nascita.getEditableText().toString());
+		try {
+			qr.setNascita(new SimpleDateFormat("dd/MM/yyyy").parse(nascita
+					.getEditableText().toString()));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			nascita.setError("data non riconosciuta");
+			ok = false;
+		}
 		qr.setProvincia(provincia.getText().toString());
 		qr.setAutomatic(isAuto);
 		// TODO a pagamento!!!
@@ -144,6 +162,7 @@ public class UMAndroidClientActivity extends Activity implements
 			qr.addDove(scelto, (Tipo) tipoRicerca.getSelectedItem());
 
 		}
+		return ok;
 	}
 
 	@Override
@@ -161,25 +180,23 @@ public class UMAndroidClientActivity extends Activity implements
 					android.R.layout.simple_spinner_item, opzDiRicerca
 							.get(scelto)));
 		}
-		if (isAuto== false ||(scelto!=null &&scelto.equals(Database.MCTC))) {
+		if (isAuto == false || (scelto != null && scelto.equals(Database.MCTC))) {
 			nascita.setVisibility(View.VISIBLE);
 			comune.setVisibility(View.VISIBLE);
 			provincia.setVisibility(View.VISIBLE);
 			textView1.setVisibility(View.VISIBLE);
 			textView2.setVisibility(View.VISIBLE);
 			textView3.setVisibility(View.VISIBLE);
-		}
-		else {
+		} else {
 			nascita.setVisibility(View.INVISIBLE);
 			comune.setVisibility(View.INVISIBLE);
 			provincia.setVisibility(View.INVISIBLE);
 			textView1.setVisibility(View.INVISIBLE);
 			textView2.setVisibility(View.INVISIBLE);
 			textView3.setVisibility(View.INVISIBLE);
-			
+
 		}
 		System.out.println(isAuto);
-		
 
 	}
 
