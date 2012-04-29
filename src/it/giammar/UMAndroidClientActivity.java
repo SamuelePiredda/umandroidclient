@@ -68,7 +68,7 @@ public class UMAndroidClientActivity extends Activity implements
 		opzDiRicerca.put(Database.CARRABILI, new Tipo[] { Tipo.NC, Tipo.IND,
 				Tipo.CARR });
 		opzDiRicerca.put(Database.MCTC, new Tipo[] { Tipo.CF, Tipo.TARGA,
-				Tipo.PATENTE });
+				Tipo.PATENTE, Tipo.NC });
 		opzDiRicerca.put(Database.OTV, new Tipo[] { Tipo.IND, Tipo.GEN });
 		opzDiRicerca.put(Database.PRA, new Tipo[] { Tipo.TARGA });
 		opzDiRicerca.put(Database.RUBATI,
@@ -116,12 +116,11 @@ public class UMAndroidClientActivity extends Activity implements
 		bancaDati.setAdapter(new ArrayAdapter<String>(this,
 				android.R.layout.simple_spinner_item, dbs));
 		bancaDati.setOnItemSelectedListener(this);
+		tipoRicerca.setOnItemSelectedListener(this);
 	}
 
 	@Override
 	public void onClick(View v) {
-		// switch (v.getId()) {
-		// case R.id.cerca:
 		QueryRequest qr = new QueryRequest();
 		boolean ok = preparaQuery(qr);
 		if (ok) {
@@ -130,11 +129,7 @@ public class UMAndroidClientActivity extends Activity implements
 			sr.putExtra("query", xstream.toXML(qr));
 			this.startActivity(sr);
 		}
-		// break;
-		// case R.id.bancaDati:
-		//
-		// break;
-		// }
+	
 	}
 
 	private boolean preparaQuery(QueryRequest qr) {
@@ -165,38 +160,47 @@ public class UMAndroidClientActivity extends Activity implements
 		return ok;
 	}
 
-	@Override
+ 	@Override
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
 			long arg3) {
+		switch (arg0.getId()) {
 
-		if (arg2 == 0) {
-			isAuto = true;
-			tipoRicerca.setEnabled(false);
-		} else {
-			isAuto = false;
-			tipoRicerca.setEnabled(true);
-			scelto = Database.values()[arg2 - 1];
-			tipoRicerca.setAdapter(new ArrayAdapter<Tipo>(this,
-					android.R.layout.simple_spinner_item, opzDiRicerca
-							.get(scelto)));
-		}
-		if (isAuto == false || (scelto != null && scelto.equals(Database.MCTC))) {
-			nascita.setVisibility(View.VISIBLE);
-			comune.setVisibility(View.VISIBLE);
-			provincia.setVisibility(View.VISIBLE);
-			textView1.setVisibility(View.VISIBLE);
-			textView2.setVisibility(View.VISIBLE);
-			textView3.setVisibility(View.VISIBLE);
-		} else {
-			nascita.setVisibility(View.INVISIBLE);
-			comune.setVisibility(View.INVISIBLE);
-			provincia.setVisibility(View.INVISIBLE);
-			textView1.setVisibility(View.INVISIBLE);
-			textView2.setVisibility(View.INVISIBLE);
-			textView3.setVisibility(View.INVISIBLE);
+		case R.id.bancaDati:
+			if (arg2 == 0) {
+				isAuto = true;
+				tipoRicerca.setEnabled(false);
+			} else {
+				isAuto = false;
+				tipoRicerca.setEnabled(true);
+				scelto = Database.values()[arg2 - 1];
+				tipoRicerca.setAdapter(new ArrayAdapter<Tipo>(this,
+						android.R.layout.simple_spinner_item, opzDiRicerca
+								.get(scelto)));
+			}
+			visualizzaMCTC(isAuto == false
+					|| (scelto != null && scelto.equals(Database.MCTC)));
 
+			System.out.println(isAuto);
+			break;
+		case R.id.tipoRicerca:
+			Tipo t = (Tipo) tipoRicerca.getSelectedItem();
+			visualizzaMCTC(t.equals(Tipo.NC) && scelto.equals(Database.MCTC));
+			break;
 		}
-		System.out.println(isAuto);
+	}
+
+	private void visualizzaMCTC(boolean b) {
+		int view;
+		if (b == true)
+			view = View.VISIBLE;
+		else
+			view = View.INVISIBLE;
+		nascita.setVisibility(view);
+		comune.setVisibility(view);
+		provincia.setVisibility(view);
+		textView1.setVisibility(view);
+		textView2.setVisibility(view);
+		textView3.setVisibility(view);
 
 	}
 
