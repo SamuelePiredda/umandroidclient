@@ -38,7 +38,7 @@ public class UMAndroidClientActivity extends Activity implements
 	private Spinner tipoRicerca;
 	private Map<Database, Tipo[]> opzDiRicerca;
 	private boolean isAuto = false;
-	private Database scelto;
+	private Database dbScelto;
 
 	private EditText nascita;
 	private EditText comune;
@@ -60,8 +60,7 @@ public class UMAndroidClientActivity extends Activity implements
 
 	private void riempiOpzioniDiRicerca() {
 		opzDiRicerca = new HashMap<Database, Tipo[]>();
-		opzDiRicerca.put(Database.ANAGRAFE, new Tipo[] { Tipo.NC, Tipo.CF,
-				 });
+		opzDiRicerca.put(Database.ANAGRAFE, new Tipo[] { Tipo.NC, Tipo.CF, });
 		opzDiRicerca.put(Database.ANIA, new Tipo[] { Tipo.TARGA });
 		opzDiRicerca.put(Database.CACOMM, new Tipo[] { Tipo.NC, Tipo.CF,
 				Tipo.IND, Tipo.GEN });
@@ -129,38 +128,42 @@ public class UMAndroidClientActivity extends Activity implements
 			sr.putExtra("query", xstream.toXML(qr));
 			this.startActivity(sr);
 		}
-	
+
 	}
 
 	private boolean preparaQuery(QueryRequest qr) {
 		boolean ok = true;
+		Tipo tpScelto = (Tipo) tipoRicerca.getSelectedItem();
 		// TODO finire validazioni campi
 		if ("".equals(query.getText().toString())) {
 			query.setError("testo obbligatorio");
 			ok = false;
 		}
-		qr.setQuery(query.getText().toString());
-		qr.setComune(comune.getText().toString());
-		try {
-			qr.setNascita(new SimpleDateFormat("dd/MM/yyyy").parse(nascita
-					.getEditableText().toString()));
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			nascita.setError("data non riconosciuta");
-			ok = false;
+		if (isAuto == false
+				&& (dbScelto.equals(Database.MCTC) && tpScelto.equals(Tipo.NC))) {
+			qr.setQuery(query.getText().toString());
+			qr.setComune(comune.getText().toString());
+			try {
+				qr.setNascita(new SimpleDateFormat("dd/MM/yyyy").parse(nascita
+						.getEditableText().toString()));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				nascita.setError("data non riconosciuta");
+				ok = false;
+			}
+			qr.setProvincia(provincia.getText().toString());
 		}
-		qr.setProvincia(provincia.getText().toString());
 		qr.setAutomatic(isAuto);
 		// TODO a pagamento!!!
 		if (isAuto == false) {
-			qr.addDove(scelto, (Tipo) tipoRicerca.getSelectedItem());
+			qr.addDove(dbScelto, tpScelto);
 
 		}
 		return ok;
 	}
 
- 	@Override
+	@Override
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
 			long arg3) {
 		switch (arg0.getId()) {
@@ -172,19 +175,19 @@ public class UMAndroidClientActivity extends Activity implements
 			} else {
 				isAuto = false;
 				tipoRicerca.setEnabled(true);
-				scelto = Database.values()[arg2 - 1];
+				dbScelto = Database.values()[arg2 - 1];
 				tipoRicerca.setAdapter(new ArrayAdapter<Tipo>(this,
 						android.R.layout.simple_spinner_item, opzDiRicerca
-								.get(scelto)));
+								.get(dbScelto)));
 			}
 			visualizzaMCTC(isAuto == false
-					|| (scelto != null && scelto.equals(Database.MCTC)));
+					|| (dbScelto != null && dbScelto.equals(Database.MCTC)));
 
 			System.out.println(isAuto);
 			break;
 		case R.id.tipoRicerca:
 			Tipo t = (Tipo) tipoRicerca.getSelectedItem();
-			visualizzaMCTC(t.equals(Tipo.NC) && scelto.equals(Database.MCTC));
+			visualizzaMCTC(t.equals(Tipo.NC) && dbScelto.equals(Database.MCTC));
 			break;
 		}
 	}
