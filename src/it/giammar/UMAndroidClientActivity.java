@@ -61,7 +61,7 @@ public class UMAndroidClientActivity extends Activity implements
 	private void riempiOpzioniDiRicerca() {
 		opzDiRicerca = new HashMap<Database, Tipo[]>();
 		opzDiRicerca.put(Database.ANAGRAFE, new Tipo[] { Tipo.NC, Tipo.CF,
-				Tipo.IND });
+				 });
 		opzDiRicerca.put(Database.ANIA, new Tipo[] { Tipo.TARGA });
 		opzDiRicerca.put(Database.CACOMM, new Tipo[] { Tipo.NC, Tipo.CF,
 				Tipo.IND, Tipo.GEN });
