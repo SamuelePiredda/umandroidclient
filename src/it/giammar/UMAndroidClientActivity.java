@@ -139,9 +139,10 @@ public class UMAndroidClientActivity extends Activity implements
 			query.setError("testo obbligatorio");
 			ok = false;
 		}
+		qr.setQuery(query.getText().toString());
 		if (isAuto == false
 				&& (dbScelto.equals(Database.MCTC) && tpScelto.equals(Tipo.NC))) {
-			qr.setQuery(query.getText().toString());
+			
 			qr.setComune(comune.getText().toString());
 			try {
 				qr.setNascita(new SimpleDateFormat("dd/MM/yyyy").parse(nascita
