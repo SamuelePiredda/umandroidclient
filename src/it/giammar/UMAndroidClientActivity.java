@@ -142,7 +142,7 @@ public class UMAndroidClientActivity extends Activity implements
 		qr.setQuery(query.getText().toString());
 		if (isAuto == false
 				&& (dbScelto.equals(Database.MCTC) && tpScelto.equals(Tipo.NC))) {
-			
+
 			qr.setComune(comune.getText().toString());
 			try {
 				qr.setNascita(new SimpleDateFormat("dd/MM/yyyy").parse(nascita
@@ -167,6 +167,7 @@ public class UMAndroidClientActivity extends Activity implements
 	@Override
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
 			long arg3) {
+		Tipo t=null;
 		switch (arg0.getId()) {
 
 		case R.id.bancaDati:
@@ -181,16 +182,19 @@ public class UMAndroidClientActivity extends Activity implements
 						android.R.layout.simple_spinner_item, opzDiRicerca
 								.get(dbScelto)));
 			}
-			visualizzaMCTC(isAuto == false
-					|| (dbScelto != null && dbScelto.equals(Database.MCTC)));
+			// visualizzaMCTC(isAuto == false
+			// || (dbScelto != null && dbScelto.equals(Database.MCTC)));
 
 			System.out.println(isAuto);
 			break;
 		case R.id.tipoRicerca:
-			Tipo t = (Tipo) tipoRicerca.getSelectedItem();
-			visualizzaMCTC(t.equals(Tipo.NC) && dbScelto.equals(Database.MCTC));
+			t = (Tipo) tipoRicerca.getSelectedItem();
+//			visualizzaMCTC(t.equals(Tipo.NC) && dbScelto.equals(Database.MCTC));
 			break;
 		}
+		visualizzaMCTC(isAuto == false
+				&& (Database.MCTC.equals(dbScelto) && Tipo.NC.equals(t)));
+
 	}
 
 	private void visualizzaMCTC(boolean b) {
