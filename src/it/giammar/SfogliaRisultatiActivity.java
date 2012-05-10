@@ -11,7 +11,6 @@ import it.giammar.pratomodel.QueryRequest;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +34,11 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnLongClickListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ExpandableListView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -52,7 +50,7 @@ import com.commonsware.cwac.merge.MergeAdapter;
 import com.thoughtworks.xstream.XStream;
 
 public class SfogliaRisultatiActivity extends Activity implements
-		OnItemClickListener,OnLongClickListener {
+	OnItemLongClickListener {
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
@@ -165,7 +163,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 			TextView t = (TextView) l.getChildAt(0);
 			ListView lv = (ListView) l.getChildAt(1);
 			lv.setOnTouchListener(gestureListener);
-			lv.setOnItemClickListener(this);
+			lv.setOnItemLongClickListener(this);
 			String[] from = new String[] { "k", "v" };
 			int[] to = new int[] { R.id.k, R.id.v };
 
@@ -352,22 +350,18 @@ public class SfogliaRisultatiActivity extends Activity implements
 		}
 	}
 
+
 	@Override
-	public void onItemClick(AdapterView<?> listView, View arg1, int position,
-			long arg3) {
+	public boolean onItemLongClick(AdapterView<?> listView, View arg1, int position, long arg3) {
 		Map<String, String> selection = (Map<String, String>) listView
 				.getItemAtPosition(position);
 		String nuovaRicerca = selection.get("v");
 		Intent sr = new Intent(this, UMAndroidClientActivity.class);
 		sr.putExtra("query", nuovaRicerca);
 		this.startActivity(sr);
-
+		return false;
 	}
 
-	@Override
-	public boolean onLongClick(View v) {
-		// TODO Auto-generated method stub
-		return true;
-	}
+	
 
 }
