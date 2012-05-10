@@ -37,8 +37,8 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -50,7 +50,7 @@ import com.commonsware.cwac.merge.MergeAdapter;
 import com.thoughtworks.xstream.XStream;
 
 public class SfogliaRisultatiActivity extends Activity implements
-	OnItemLongClickListener {
+		OnItemLongClickListener {
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
@@ -80,6 +80,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 			(byte) 0x15, (byte) 0x16, (byte) 0x17 };
 	private int totaleBD;
 	private int bdArrivate;
+
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
@@ -167,10 +168,10 @@ public class SfogliaRisultatiActivity extends Activity implements
 			String[] from = new String[] { "k", "v" };
 			int[] to = new int[] { R.id.k, R.id.v };
 
-//			SimpleAdapter adapter = new SimpleAdapter(this,
-//					new ArrayList<Map<String, String>>(),
-//					R.layout.rigarisultato, from, to);
-			MergeAdapter adapter= new MergeAdapter(); 
+			// SimpleAdapter adapter = new SimpleAdapter(this,
+			// new ArrayList<Map<String, String>>(),
+			// R.layout.rigarisultato, from, to);
+			MergeAdapter adapter = new MergeAdapter();
 			lv.setAdapter(adapter);
 			t.setText(db.toString());
 			visBancheDati.put(db, l);
@@ -204,7 +205,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				QueryRequest q = params[0];
 				q.setVersione(randomGenerator.nextInt());
 				q.setUserName(sp.getString("utente", ""));
-				q.setPassword(sp.getString("password",""));
+				q.setPassword(sp.getString("password", ""));
 				XStream xstream = new XStream();
 
 				frame = new StompFrame(SEND);
@@ -213,14 +214,15 @@ public class SfogliaRisultatiActivity extends Activity implements
 				frame.addHeader(MESSAGE_ID, StompFrame.encodeHeader("test"));
 				frame.addHeader(StompFrame.encodeHeader("stomp"),
 						StompFrame.encodeHeader("yes"));
-//				autenticati(frame);
+				// autenticati(frame);
 				frame.addHeader(
 						StompFrame.encodeHeader("CamelJmsDestinationName"),
 						StompFrame.encodeHeader(imei()));
 				frame.content(new AsciiBuffer(xstream.toXML(q)));
 				connection.send(frame);
 				bdArrivate = 0;
-				totaleBD=1; // il loop deve continuare finche' non arriva almeno un risultato valido
+				totaleBD = 1; // il loop deve continuare finche' non arriva
+								// almeno un risultato valido
 				do {
 					StompFrame received = connection.receive();
 
@@ -230,14 +232,14 @@ public class SfogliaRisultatiActivity extends Activity implements
 					System.out.println(qr.getVersione());
 					System.out.println(qrep.getVersione());
 					if (qr.getVersione() == qrep.getVersione()) {
-						
+
 						bdArrivate++;
-						totaleBD=qrep.getTotRisult();
-						System.out.println(bdArrivate+"/"+totaleBD);
+						totaleBD = qrep.getTotRisult();
+						System.out.println(bdArrivate + "/" + totaleBD);
 						publishProgress(qrep);
 					}
 
-				} while (bdArrivate<totaleBD);
+				} while (bdArrivate < totaleBD);
 				connection.close();
 				connection = null;
 			} catch (URISyntaxException e) {
@@ -253,24 +255,26 @@ public class SfogliaRisultatiActivity extends Activity implements
 			return null;
 		}
 
-//		private void autenticati(StompFrame frame) throws Exception {
-//			ShiroSecurityToken securityToken = new ShiroSecurityToken(
-//					sp.getString("utente", ""), sp.getString("password",""));
-//			CipherService cipherService = new AesCipherService();
-//			ByteArrayOutputStream stream = new  ByteArrayOutputStream();
-//	        ObjectOutput serialStream = new ObjectOutputStream(stream);
-//	        serialStream.writeObject(securityToken);
-//	        ByteSource byteSource = cipherService.encrypt(stream.toByteArray(), passPhrase);
-//	        serialStream.close();
-//	        stream.close();
-//	        String encodedString = StringUtils.newStringUtf8((Base64.encodeBase64(byteSource.getBytes(),false)));
-//	        String safeString = encodedString.replace('+','-').replace('/','_');
-//
-//			frame.addHeader(StompFrame.encodeHeader("SHIRO_SECURITY_TOKEN"),
-//					new AsciiBuffer(encodedString));
-//			System.out.println(StompFrame.encodeHeader(safeString).length);
-//			System.out.println(StompFrame.encodeHeader(safeString));
-//		}
+		// private void autenticati(StompFrame frame) throws Exception {
+		// ShiroSecurityToken securityToken = new ShiroSecurityToken(
+		// sp.getString("utente", ""), sp.getString("password",""));
+		// CipherService cipherService = new AesCipherService();
+		// ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		// ObjectOutput serialStream = new ObjectOutputStream(stream);
+		// serialStream.writeObject(securityToken);
+		// ByteSource byteSource = cipherService.encrypt(stream.toByteArray(),
+		// passPhrase);
+		// serialStream.close();
+		// stream.close();
+		// String encodedString =
+		// StringUtils.newStringUtf8((Base64.encodeBase64(byteSource.getBytes(),false)));
+		// String safeString = encodedString.replace('+','-').replace('/','_');
+		//
+		// frame.addHeader(StompFrame.encodeHeader("SHIRO_SECURITY_TOKEN"),
+		// new AsciiBuffer(encodedString));
+		// System.out.println(StompFrame.encodeHeader(safeString).length);
+		// System.out.println(StompFrame.encodeHeader(safeString));
+		// }
 
 		private String imei() {
 			if (!imei.equals(""))
@@ -293,30 +297,39 @@ public class SfogliaRisultatiActivity extends Activity implements
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
 			QueryReply qr = values[0];
-			int layout=R.layout.rigarisultato2;
+			int layout = R.layout.rigarisultato2;
 			LinearLayout risultati = visBancheDati.get(qr.getDaQualeDB());
 			viewFlipper.addView(risultati);
 			for (Entry<String, List<Map<String, String>>> unRisultato : qr
 					.getRisultati().entrySet()) {
 
-				
 				ListView lv = ((ListView) risultati.getChildAt(1));
-				if (layout==R.layout.rigarisultato) layout=R.layout.rigarisultato2;
-				else layout=R.layout.rigarisultato;
+				if (layout == R.layout.rigarisultato)
+					layout = R.layout.rigarisultato2;
+				else
+					layout = R.layout.rigarisultato;
 				String[] from = new String[] { "k", "v" };
 				int[] to = new int[] { R.id.k, R.id.v };
 
 				SimpleAdapter adapter = new SimpleAdapter(io,
-						unRisultato.getValue(), layout, from,
-						to);
-				MergeAdapter ma= (MergeAdapter) lv.getAdapter();
-				ma.addView(inflater.inflate(R.layout.separatore,null));
+						unRisultato.getValue(), layout, from, to);
+				MergeAdapter ma = (MergeAdapter) lv.getAdapter();
+				LinearLayout separatore = (LinearLayout) inflater.inflate(
+						R.layout.separatore, null);
+				Button b = (Button) separatore.getChildAt(0);
+				if ("".equals(qr.getMimeType())||qr.getMimeType()==null)
+					b.setVisibility(Button.INVISIBLE);
+				else {
+					b.setTag(qr.getMimeType() + "||" + unRisultato.getKey());
+					b.setVisibility(Button.VISIBLE);
+				}
+				ma.addView(separatore);
 				ma.addAdapter(adapter);
 				ma.notifyDataSetChanged();
 				lv.setAdapter(ma);
-				
+
 			}
-			progress.setProgress(100*bdArrivate/totaleBD);
+			progress.setProgress(100 * bdArrivate / totaleBD);
 			// super.onProgressUpdate(values);
 		}
 
@@ -350,9 +363,9 @@ public class SfogliaRisultatiActivity extends Activity implements
 		}
 	}
 
-
 	@Override
-	public boolean onItemLongClick(AdapterView<?> listView, View arg1, int position, long arg3) {
+	public boolean onItemLongClick(AdapterView<?> listView, View arg1,
+			int position, long arg3) {
 		Map<String, String> selection = (Map<String, String>) listView
 				.getItemAtPosition(position);
 		String nuovaRicerca = selection.get("v");
@@ -361,7 +374,5 @@ public class SfogliaRisultatiActivity extends Activity implements
 		this.startActivity(sr);
 		return false;
 	}
-
-	
 
 }
