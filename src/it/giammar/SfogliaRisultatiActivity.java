@@ -26,6 +26,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -50,14 +51,12 @@ import android.widget.ViewFlipper;
 import com.commonsware.cwac.merge.MergeAdapter;
 import com.thoughtworks.xstream.XStream;
 
-public class SfogliaRisultatiActivity extends Activity implements
-		OnItemLongClickListener, OnClickListener {
+public class SfogliaRisultatiActivity extends Activity implements OnItemLongClickListener, OnClickListener {
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private static Random randomGenerator = new Random();
-	private static String fakeImei = Integer.valueOf(randomGenerator.nextInt())
-			.toString();
+	private static String fakeImei = Integer.valueOf(randomGenerator.nextInt()).toString();
 	private static String imei = "";
 	private GestureDetector gestureDetector;
 	private View.OnTouchListener gestureListener;
@@ -75,10 +74,9 @@ public class SfogliaRisultatiActivity extends Activity implements
 	private SharedPreferences sp;
 	protected BlockingConnection connection;
 	private EffettuaQuery eq;
-	final byte[] passPhrase = { (byte) 0x08, (byte) 0x09, (byte) 0x0A,
-			(byte) 0x0B, (byte) 0x0C, (byte) 0x0D, (byte) 0x0E, (byte) 0x0F,
-			(byte) 0x10, (byte) 0x11, (byte) 0x12, (byte) 0x13, (byte) 0x14,
-			(byte) 0x15, (byte) 0x16, (byte) 0x17 };
+	final byte[] passPhrase = { (byte) 0x08, (byte) 0x09, (byte) 0x0A, (byte) 0x0B, (byte) 0x0C, (byte) 0x0D,
+			(byte) 0x0E, (byte) 0x0F, (byte) 0x10, (byte) 0x11, (byte) 0x12, (byte) 0x13, (byte) 0x14, (byte) 0x15,
+			(byte) 0x16, (byte) 0x17 };
 	private int totaleBD;
 	private int bdArrivate;
 
@@ -119,14 +117,10 @@ public class SfogliaRisultatiActivity extends Activity implements
 		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper1);
 		progress = (ProgressBar) findViewById(R.id.progressBar1);
-		slideLeftIn = AnimationUtils.loadAnimation(this,
-				android.R.anim.slide_in_left);
-		slideLeftOut = AnimationUtils.loadAnimation(this,
-				android.R.anim.slide_out_right);
-		slideRightIn = AnimationUtils.loadAnimation(this,
-				android.R.anim.slide_in_left);
-		slideRightOut = AnimationUtils.loadAnimation(this,
-				android.R.anim.slide_out_right);
+		slideLeftIn = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
+		slideLeftOut = AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right);
+		slideRightIn = AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left);
+		slideRightOut = AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right);
 		gestureDetector = new GestureDetector(new MyGestureDetector());
 		gestureListener = new View.OnTouchListener() {
 			public boolean onTouch(View v, MotionEvent event) {
@@ -143,8 +137,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 		sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);
 
-		qr = (QueryRequest) xstream.fromXML(getIntent().getExtras().getString(
-				"query"));
+		qr = (QueryRequest) xstream.fromXML(getIntent().getExtras().getString("query"));
 		eq = new EffettuaQuery();
 		eq.execute(qr);
 
@@ -160,8 +153,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 	private void associaBancheDatiaViews() {
 		for (Database db : Database.values()) {
-			LinearLayout l = (LinearLayout) inflater.inflate(
-					R.layout.risultati, null);
+			LinearLayout l = (LinearLayout) inflater.inflate(R.layout.risultati, null);
 			TextView t = (TextView) l.getChildAt(0);
 			ListView lv = (ListView) l.getChildAt(1);
 			lv.setOnTouchListener(gestureListener);
@@ -180,26 +172,20 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 	}
 
-	private class EffettuaQuery extends
-			AsyncTask<QueryRequest, QueryReply, Void> {
+	private class EffettuaQuery extends AsyncTask<QueryRequest, QueryReply, Void> {
 
 		@Override
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
-				System.out
-						.println("CONNESSIONE A:    "
-								+ sp.getString("host",
-										"ufficiomobile.comune.prato.it"));
-				stomp = new Stomp("tcp://"
-						+ sp.getString("host", "ufficiomobile.comune.prato.it")
-						+ ":" + sp.getString("port", "61613"));
+				System.out.println("CONNESSIONE A:    " + sp.getString("host", "ufficiomobile.comune.prato.it"));
+				stomp = new Stomp("tcp://" + sp.getString("host", "ufficiomobile.comune.prato.it") + ":"
+						+ sp.getString("port", "61613"));
 
 				connection = stomp.connectBlocking();
 
 				StompFrame frame = new StompFrame(SUBSCRIBE);
-				frame.addHeader(DESTINATION,
-						StompFrame.encodeHeader("/queue/" + imei()));
+				frame.addHeader(DESTINATION, StompFrame.encodeHeader("/queue/" + imei()));
 				frame.addHeader(ID, connection.nextId());
 				StompFrame response = connection.request(frame);
 
@@ -210,15 +196,11 @@ public class SfogliaRisultatiActivity extends Activity implements
 				XStream xstream = new XStream();
 
 				frame = new StompFrame(SEND);
-				frame.addHeader(DESTINATION,
-						StompFrame.encodeHeader("/queue/queryServer"));
+				frame.addHeader(DESTINATION, StompFrame.encodeHeader("/queue/queryServer"));
 				frame.addHeader(MESSAGE_ID, StompFrame.encodeHeader("test"));
-				frame.addHeader(StompFrame.encodeHeader("stomp"),
-						StompFrame.encodeHeader("yes"));
+				frame.addHeader(StompFrame.encodeHeader("stomp"), StompFrame.encodeHeader("yes"));
 				// autenticati(frame);
-				frame.addHeader(
-						StompFrame.encodeHeader("CamelJmsDestinationName"),
-						StompFrame.encodeHeader(imei()));
+				frame.addHeader(StompFrame.encodeHeader("CamelJmsDestinationName"), StompFrame.encodeHeader(imei()));
 				frame.content(new AsciiBuffer(xstream.toXML(q)));
 				connection.send(frame);
 				bdArrivate = 0;
@@ -228,8 +210,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 					StompFrame received = connection.receive();
 
 					System.out.println(received.contentAsString());
-					QueryReply qrep = (QueryReply) xstream.fromXML(received
-							.contentAsString());
+					QueryReply qrep = (QueryReply) xstream.fromXML(received.contentAsString());
 					System.out.println(qr.getVersione());
 					System.out.println(qrep.getVersione());
 					if (qr.getVersione() == qrep.getVersione()) {
@@ -301,8 +282,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 			int layout = R.layout.rigarisultato2;
 			LinearLayout risultati = visBancheDati.get(qr.getDaQualeDB());
 			viewFlipper.addView(risultati);
-			for (Entry<String, List<Map<String, String>>> unRisultato : qr
-					.getRisultati().entrySet()) {
+			for (Entry<String, List<Map<String, String>>> unRisultato : qr.getRisultati().entrySet()) {
 
 				ListView lv = ((ListView) risultati.getChildAt(1));
 				if (layout == R.layout.rigarisultato)
@@ -312,18 +292,16 @@ public class SfogliaRisultatiActivity extends Activity implements
 				String[] from = new String[] { "k", "v" };
 				int[] to = new int[] { R.id.k, R.id.v };
 
-				SimpleAdapter adapter = new SimpleAdapter(io,
-						unRisultato.getValue(), layout, from, to);
+				SimpleAdapter adapter = new SimpleAdapter(io, unRisultato.getValue(), layout, from, to);
 				MergeAdapter ma = (MergeAdapter) lv.getAdapter();
-				LinearLayout separatore = (LinearLayout) inflater.inflate(
-						R.layout.separatore, null);
+				LinearLayout separatore = (LinearLayout) inflater.inflate(R.layout.separatore, null);
 				Button b = (Button) separatore.getChildAt(0);
-				if ("".equals(qr.getMimeType())||qr.getMimeType()==null)
+				if ("".equals(qr.getMimeType()) || qr.getMimeType() == null)
 					b.setVisibility(Button.INVISIBLE);
 				else {
-					b.setTag(qr.getMimeType() + "||" + unRisultato.getKey());
+					b.setTag(/* qr.getMimeType() + "||" + */unRisultato.getKey());
 					b.setVisibility(Button.VISIBLE);
-						b.setOnClickListener((OnClickListener) this);
+					b.setOnClickListener(SfogliaRisultatiActivity.this);
 				}
 				ma.addView(separatore);
 				ma.addAdapter(adapter);
@@ -340,20 +318,17 @@ public class SfogliaRisultatiActivity extends Activity implements
 	class MyGestureDetector extends SimpleOnGestureListener {
 
 		@Override
-		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-				float velocityY) {
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 			System.out.println("sono in onfling");
 			try {
 				if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
 					return false;
 				// right to left swipe
-				if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
-						&& Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+				if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
 					viewFlipper.setAnimation(slideRightIn);
 					// viewFlipper.setOutAnimation(slideLeftOut);
 					viewFlipper.showNext();
-				} else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
-						&& Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+				} else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
 					viewFlipper.setAnimation(slideLeftIn);
 					// viewFlipper.setOutAnimation(slideRightOut);
 					viewFlipper.showPrevious();
@@ -366,10 +341,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 	}
 
 	@Override
-	public boolean onItemLongClick(AdapterView<?> listView, View arg1,
-			int position, long arg3) {
-		Map<String, String> selection = (Map<String, String>) listView
-				.getItemAtPosition(position);
+	public boolean onItemLongClick(AdapterView<?> listView, View arg1, int position, long arg3) {
+		Map<String, String> selection = (Map<String, String>) listView.getItemAtPosition(position);
 		String nuovaRicerca = selection.get("v");
 		Intent sr = new Intent(this, UMAndroidClientActivity.class);
 		sr.putExtra("query", nuovaRicerca);
@@ -379,8 +352,14 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		
+		String url = "http://";
+		url += sp.getString("host", "ufficiomobile.comune.prato.it");
+		url += ":18080/pratobackend/camel/allegati?key=";
+		url += (String) v.getTag();
+		Intent i = new Intent(Intent.ACTION_VIEW);
+		i.setData(Uri.parse(url));
+		startActivity(i);
+
 	}
 
 }
