@@ -34,6 +34,7 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
@@ -50,7 +51,7 @@ import com.commonsware.cwac.merge.MergeAdapter;
 import com.thoughtworks.xstream.XStream;
 
 public class SfogliaRisultatiActivity extends Activity implements
-		OnItemLongClickListener {
+		OnItemLongClickListener, OnClickListener {
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
@@ -322,6 +323,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				else {
 					b.setTag(qr.getMimeType() + "||" + unRisultato.getKey());
 					b.setVisibility(Button.VISIBLE);
+						b.setOnClickListener((OnClickListener) this);
 				}
 				ma.addView(separatore);
 				ma.addAdapter(adapter);
@@ -373,6 +375,12 @@ public class SfogliaRisultatiActivity extends Activity implements
 		sr.putExtra("query", nuovaRicerca);
 		this.startActivity(sr);
 		return false;
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
