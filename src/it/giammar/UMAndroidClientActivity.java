@@ -156,7 +156,7 @@ public class UMAndroidClientActivity extends Activity implements
 			qr.setProvincia(provincia.getText().toString());
 		}
 		qr.setAutomatic(isAuto);
-		// TODO a pagamento!!!
+		qr.setaPagamento(aPagamento.isChecked());
 		if (isAuto == false) {
 			qr.addDove(dbScelto, tpScelto);
 

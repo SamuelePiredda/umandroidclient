@@ -22,7 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="SfogliaRisultatiActivity" >
+        <activity android:name="SfogliaRisultatiActivity" android:configChanges="keyboardHidden|orientation" >
         </activity>
         <activity android:name="PreferenzeActivity" >
         </activity>
