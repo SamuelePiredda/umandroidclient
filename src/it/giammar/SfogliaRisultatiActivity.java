@@ -10,12 +10,18 @@ import it.giammar.pratomodel.QueryReply.Database;
 import it.giammar.pratomodel.QueryRequest;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.fusesource.hawtbuf.AsciiBuffer;
 import org.fusesource.stomp.client.BlockingConnection;
@@ -195,10 +201,40 @@ public class SfogliaRisultatiActivity extends Activity implements
 						.println("CONNESSIONE A:    "
 								+ sp.getString("host",
 										"ufficiomobile.comune.prato.it"));
-				stomp = new Stomp("tcp://"
-						+ sp.getString("host", "ufficiomobile.comune.prato.it")
-						+ ":" + sp.getString("port", "61613"));
+				  InputStream clientTruststoreIs = getResources().openRawResource(R.raw.truststore);
+			      KeyStore trustStore = null;
+			      trustStore = KeyStore.getInstance("BKS");
+			      trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
 
+			      System.out.println("Loaded server certificates: " + trustStore.size());
+
+			      // initialize trust manager factory with the read truststore
+			      TrustManagerFactory tmf = null;
+			      tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+			      tmf.init(trustStore);
+
+			      // setup client certificate
+
+			      // load client certificate
+			      InputStream keyStoreStream = getResources().openRawResource(R.raw.truststore);
+			      KeyStore keyStore = null;
+			      keyStore = KeyStore.getInstance("BKS");
+			      keyStore.load(keyStoreStream, "prato1.".toCharArray());
+
+			      System.out.println("Loaded client certificates: " + keyStore.size());
+
+			      // initialize key manager factory with the read client certificate
+			      KeyManagerFactory kmf = null;
+			      kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			      kmf.init(keyStore,"prato1.".toCharArray());
+
+
+			      SSLContext ctx = SSLContext.getInstance("SSL");
+					ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+				stomp = new Stomp("ssl://"
+						+ sp.getString("host", "ufficiomobile.comune.prato.it")
+						+ ":" + sp.getString("port", "61614"));
+				stomp.setSslContext(ctx);
 				connection = stomp.connectBlocking();
 
 				StompFrame frame = new StompFrame(SUBSCRIBE);
