@@ -117,7 +117,6 @@ public class SfogliaRisultatiActivity extends Activity implements
 		chiudiTutto();
 	}
 
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -201,36 +200,42 @@ public class SfogliaRisultatiActivity extends Activity implements
 						.println("CONNESSIONE A:    "
 								+ sp.getString("host",
 										"ufficiomobile.comune.prato.it"));
-				  InputStream clientTruststoreIs = getResources().openRawResource(R.raw.truststore);
-			      KeyStore trustStore = null;
-			      trustStore = KeyStore.getInstance("BKS");
-			      trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
+				InputStream clientTruststoreIs = getResources()
+						.openRawResource(R.raw.truststore);
+				KeyStore trustStore = null;
+				trustStore = KeyStore.getInstance("BKS");
+				trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
 
-			      System.out.println("Loaded server certificates: " + trustStore.size());
+				System.out.println("Loaded server certificates: "
+						+ trustStore.size());
 
-			      // initialize trust manager factory with the read truststore
-			      TrustManagerFactory tmf = null;
-			      tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-			      tmf.init(trustStore);
+				// initialize trust manager factory with the read truststore
+				TrustManagerFactory tmf = null;
+				tmf = TrustManagerFactory.getInstance(TrustManagerFactory
+						.getDefaultAlgorithm());
+				tmf.init(trustStore);
 
-			      // setup client certificate
+				// setup client certificate
 
-			      // load client certificate
-			      InputStream keyStoreStream = getResources().openRawResource(R.raw.truststore);
-			      KeyStore keyStore = null;
-			      keyStore = KeyStore.getInstance("BKS");
-			      keyStore.load(keyStoreStream, "prato1.".toCharArray());
+				// load client certificate
+				InputStream keyStoreStream = getResources().openRawResource(
+						R.raw.client);
+				KeyStore keyStore = null;
+				keyStore = KeyStore.getInstance("BKS");
+				keyStore.load(keyStoreStream, "prato1.".toCharArray());
 
-			      System.out.println("Loaded client certificates: " + keyStore.size());
+				System.out.println("Loaded client certificates: "
+						+ keyStore.size());
 
-			      // initialize key manager factory with the read client certificate
-			      KeyManagerFactory kmf = null;
-			      kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			      kmf.init(keyStore,"prato1.".toCharArray());
+				// initialize key manager factory with the read client
+				// certificate
+				KeyManagerFactory kmf = null;
+				kmf = KeyManagerFactory.getInstance(KeyManagerFactory
+						.getDefaultAlgorithm());
+				kmf.init(keyStore, "141423".toCharArray());
 
-
-			      SSLContext ctx = SSLContext.getInstance("SSL");
-					ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+				SSLContext ctx = SSLContext.getInstance("SSL");
+				ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 				stomp = new Stomp("ssl://"
 						+ sp.getString("host", "ufficiomobile.comune.prato.it")
 						+ ":" + sp.getString("port", "61614"));
