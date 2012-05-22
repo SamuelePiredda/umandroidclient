@@ -202,24 +202,28 @@ public class SfogliaRisultatiActivity extends Activity implements OnItemLongClic
 				// setup client certificate
 
 				// load client certificate
-				InputStream keyStoreStream = getResources().openRawResource(R.raw.client);
+//				InputStream keyStoreStream = getResources().openRawResource(R.raw.client);
 				KeyStore keyStore = null;
-				keyStore = KeyStore.getInstance("BKS");
-				keyStore.load(keyStoreStream, "prato1.".toCharArray());
-
-				System.out.println("Loaded client certificates: " + keyStore.size());
+//				keyStore = KeyStore.getInstance("BKS");
+//				keyStore.load(keyStoreStream, "prato1.".toCharArray());
+//
+//				System.out.println("Loaded client certificates: " + keyStore.size());
 
 				// initialize key manager factory with the read client
 				// certificate
-				KeyManagerFactory kmf = null;
-				kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-				kmf.init(keyStore, "141423".toCharArray());
+//				KeyManagerFactory kmf = null;
+//				kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+//				kmf.init(keyStore, "141423".toCharArray());
 
-				SSLContext ctx = SSLContext.getInstance("SSL");
-				ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-				stomp = new Stomp("tcp://" + sp.getString("host", "ufficiomobile.comune.prato.it") + ":"
+				SSLContext ctx = SSLContext.getInstance("SSLv3");
+				ctx.getClientSessionContext().setSessionCacheSize(1000);
+				ctx.getClientSessionContext().setSessionTimeout(1000);
+				ctx.getServerSessionContext().setSessionCacheSize(1000);
+				ctx.getServerSessionContext().setSessionTimeout(1000);
+				ctx.init(null, tmf.getTrustManagers(), null);
+				stomp = new Stomp("ssl://" + sp.getString("host", "ufficiomobile.comune.prato.it") + ":"
 						+ sp.getString("port", "61614"));
-//				stomp.setSslContext(ctx);
+				stomp.setSslContext(ctx);
 				connection = stomp.connectBlocking();
 				System.out.println("CONNESSO A:    " + sp.getString("host", "ufficiomobile.comune.prato.it"));
 				StompFrame frame = new StompFrame(SUBSCRIBE);
