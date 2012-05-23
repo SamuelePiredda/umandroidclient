@@ -62,7 +62,7 @@ public class SfogliaRisultatiActivity extends Activity implements OnItemLongClic
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	private static Random randomGenerator = new Random();
-	private static String fakeImei = Integer.valueOf(randomGenerator.nextInt()).toString();
+	private static String fakeImei = "test"+Integer.valueOf(randomGenerator.nextInt()).toString();
 	private static String imei = "";
 	private GestureDetector gestureDetector;
 	private View.OnTouchListener gestureListener;
@@ -216,10 +216,10 @@ public class SfogliaRisultatiActivity extends Activity implements OnItemLongClic
 //				kmf.init(keyStore, "141423".toCharArray());
 
 				SSLContext ctx = SSLContext.getInstance("SSLv3");
-				ctx.getClientSessionContext().setSessionCacheSize(1000);
-				ctx.getClientSessionContext().setSessionTimeout(1000);
-				ctx.getServerSessionContext().setSessionCacheSize(1000);
-				ctx.getServerSessionContext().setSessionTimeout(1000);
+				ctx.getClientSessionContext().setSessionCacheSize(1);
+				ctx.getClientSessionContext().setSessionTimeout(1);
+				ctx.getServerSessionContext().setSessionCacheSize(1);
+				ctx.getServerSessionContext().setSessionTimeout(1);
 				ctx.init(null, tmf.getTrustManagers(), null);
 				stomp = new Stomp("ssl://" + sp.getString("host", "ufficiomobile.comune.prato.it") + ":"
 						+ sp.getString("port", "61614"));
