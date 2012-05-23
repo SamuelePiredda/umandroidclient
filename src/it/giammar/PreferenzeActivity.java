@@ -17,13 +17,14 @@ public class PreferenzeActivity extends Activity implements OnClickListener {
 	private EditText password;
 	private EditText host;
 	private EditText port;
-	private Button   salva;
+	private Button salva;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		
+
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.preferenze);
-		sp=this.getSharedPreferences("UM",Context.MODE_PRIVATE);
+		sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);
 		salva = (Button) findViewById(R.id.salva);
 		utente = (EditText) findViewById(R.id.utente);
 		password = (EditText) findViewById(R.id.password);
@@ -36,16 +37,35 @@ public class PreferenzeActivity extends Activity implements OnClickListener {
 		salva.setOnClickListener(this);
 
 	}
+
 	@Override
 	public void onClick(View v) {
-		Editor edit=sp.edit();
-		edit.putString("utente", utente.getText().toString());
-		edit.putString("password", password.getText().toString());
-		edit.putString("host", host.getText().toString());
-		edit.putString("port", port.getText().toString());
-		edit.commit();
-		Intent main = new Intent(this, UMAndroidClientActivity.class);
-		this.startActivity(main);
+		boolean ok = true;
+		if ("".equals(utente.getText().toString())) {
+			utente.setError("utente obbligatorio");
+			ok = false;
+		}
+		if ("".equals(password.getText().toString())) {
+			password.setError("password obbligatorio");
+			ok = false;
+		}
+		if ("".equals(host.getText().toString())) {
+			host.setError("host obbligatorio");
+			ok = false;
+		}
+		if ("".equals(port.getText().toString())) {
+			port.setError("port obbligatorio");
+			ok = false;
+		}
+		if (ok) {
+			Editor edit = sp.edit();
+			edit.putString("utente", utente.getText().toString());
+			edit.putString("password", password.getText().toString());
+			edit.putString("host", host.getText().toString());
+			edit.putString("port", port.getText().toString());
+			edit.commit();
+			Intent main = new Intent(this, UMAndroidClientActivity.class);
+			this.startActivity(main);
+		}
 	}
-
 }
