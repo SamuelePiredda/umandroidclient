@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="libs/hawtdispatch-1.11.jar"/>
 	<classpathentry kind="lib" path="libs/hawtdispatch-transport-1.11.jar"/>
 	<classpathentry kind="lib" path="libs/stompjms-client-1.11.jar"/>
+	<classpathentry kind="lib" path="libs/bcprov-jdk15on-147.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
