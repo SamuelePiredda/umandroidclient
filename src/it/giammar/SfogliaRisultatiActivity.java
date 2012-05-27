@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -220,33 +221,36 @@ public class SfogliaRisultatiActivity extends Activity implements
 				// load client certificate
 				// InputStream keyStoreStream =
 				// getResources().openRawResource(R.raw.client);
-				KeyStore keyStore = null;
-				// keyStore = KeyStore.getInstance("BKS");
-				// keyStore.load(keyStoreStream, "prato1.".toCharArray());
-				//
-				// System.out.println("Loaded client certificates: " +
-				// keyStore.size());
-
+//				KeyStore keyStore = null;
+//				keyStore = KeyStore.getInstance("BKS");
+//				keyStore.load(keyStoreStream, "prato1.".toCharArray());
+				
+//				System.out.println("Loaded client certificates: " +
+//				keyStore.size());
 				// initialize key manager factory with the read client
 				// certificate
-				// KeyManagerFactory kmf = null;
-				// kmf =
-				// KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-				// kmf.init(keyStore, "141423".toCharArray());
+				KeyManagerFactory kmf = null;
+				kmf =
+				KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+//				kmf.init(keyStore, "141423".toCharArray());
 //				java.security.Security
 //						.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-//
-//				SSLContext ctx = SSLContext.getInstance("SSLv3",
-//						new BouncyCastleProvider());
+
+				SSLContext ctx = SSLContext.getInstance("TLS");
 //				ctx.getClientSessionContext().setSessionCacheSize(1);
 //				ctx.getClientSessionContext().setSessionTimeout(1);
 //				ctx.getServerSessionContext().setSessionCacheSize(1);
 //				ctx.getServerSessionContext().setSessionTimeout(1);
-//				ctx.init(null, tmf.getTrustManagers(), null);
-				stomp = new Stomp("tcp://"
+				ctx.init(null, tmf.getTrustManagers(), null);
+				System.out.println("prima di new stomp");
+				stomp = new Stomp("ssl://"
 						+ sp.getString("host", "ufficiomobile.comune.prato.it")
 						+ ":" + sp.getString("port", "61614"));
-//				stomp.setSslContext(ctx);
+				System.out.println("prima di setsslcontext");
+				
+				stomp.setSslContext(ctx);
+				System.out.println("prima di connectBlocking");
+				
 				connection = stomp.connectBlocking();
 				System.out
 						.println("CONNESSO A:    "
