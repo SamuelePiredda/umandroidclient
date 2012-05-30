@@ -221,36 +221,37 @@ public class SfogliaRisultatiActivity extends Activity implements
 				// load client certificate
 				// InputStream keyStoreStream =
 				// getResources().openRawResource(R.raw.client);
-//				KeyStore keyStore = null;
-//				keyStore = KeyStore.getInstance("BKS");
-//				keyStore.load(keyStoreStream, "prato1.".toCharArray());
-				
-//				System.out.println("Loaded client certificates: " +
-//				keyStore.size());
+				// KeyStore keyStore = null;
+				// keyStore = KeyStore.getInstance("BKS");
+				// keyStore.load(keyStoreStream, "prato1.".toCharArray());
+
+				// System.out.println("Loaded client certificates: " +
+				// keyStore.size());
 				// initialize key manager factory with the read client
 				// certificate
 				KeyManagerFactory kmf = null;
-				kmf =
-				KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-//				kmf.init(keyStore, "141423".toCharArray());
-//				java.security.Security
-//						.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+				kmf = KeyManagerFactory.getInstance(KeyManagerFactory
+						.getDefaultAlgorithm());
+				// kmf.init(keyStore, "141423".toCharArray());
+				// java.security.Security
+				// .addProvider(new
+				// org.bouncycastle.jce.provider.BouncyCastleProvider());
 
 				SSLContext ctx = SSLContext.getInstance("TLS");
-//				ctx.getClientSessionContext().setSessionCacheSize(1);
-//				ctx.getClientSessionContext().setSessionTimeout(1);
-//				ctx.getServerSessionContext().setSessionCacheSize(1);
-//				ctx.getServerSessionContext().setSessionTimeout(1);
+				// ctx.getClientSessionContext().setSessionCacheSize(1);
+				// ctx.getClientSessionContext().setSessionTimeout(1);
+				// ctx.getServerSessionContext().setSessionCacheSize(1);
+				// ctx.getServerSessionContext().setSessionTimeout(1);
 				ctx.init(null, tmf.getTrustManagers(), null);
 				System.out.println("prima di new stomp");
 				stomp = new Stomp("ssl://"
 						+ sp.getString("host", "ufficiomobile.comune.prato.it")
 						+ ":" + sp.getString("port", "61614"));
 				System.out.println("prima di setsslcontext");
-				
+
 				stomp.setSslContext(ctx);
 				System.out.println("prima di connectBlocking");
-				
+
 				connection = stomp.connectBlocking();
 				System.out
 						.println("CONNESSO A:    "
@@ -380,7 +381,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				if ("".equals(qr.getMimeType()) || qr.getMimeType() == null)
 					b.setVisibility(Button.INVISIBLE);
 				else {
-					b.setTag(/* qr.getMimeType() + "||" + */unRisultato.getKey());
+					b.setTag(qr.getMimeType() + "||" + unRisultato.getKey());
 					b.setVisibility(Button.VISIBLE);
 					b.setOnClickListener(SfogliaRisultatiActivity.this);
 				}
@@ -438,13 +439,14 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 	@Override
 	public void onClick(View v) {
+		String tEk[]=((String) v.getTag()).split("||");
 		String url = "http://";
 		url += sp.getString("host", "ufficiomobile.comune.prato.it");
 		url += ":" + sp.getString("attport", "18080")
 				+ "/pratobackend/camel/allegati?key=";
-		url += (String) v.getTag();
+		url += tEk[1];
 		Intent i = new Intent(Intent.ACTION_VIEW);
-		i.setData(Uri.parse(url));
+		i.setDataAndType(Uri.parse(url),tEk[0]);
 		startActivity(i);
 
 	}
