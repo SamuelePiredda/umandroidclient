@@ -11,7 +11,6 @@ import it.giammar.pratomodel.QueryRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
@@ -23,14 +22,15 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.fusesource.hawtbuf.AsciiBuffer;
 import org.fusesource.stomp.client.BlockingConnection;
 import org.fusesource.stomp.client.Stomp;
 import org.fusesource.stomp.codec.StompFrame;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -53,6 +53,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.commonsware.cwac.merge.MergeAdapter;
@@ -154,6 +155,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 		qr = (QueryRequest) xstream.fromXML(getIntent().getExtras().getString(
 				"query"));
+		Toast.makeText(viewFlipper.getContext(), "Connessione...",
+				Toast.LENGTH_LONG).show();
 		eq = new EffettuaQuery();
 
 		eq.execute(qr);
@@ -303,15 +306,27 @@ public class SfogliaRisultatiActivity extends Activity implements
 				} while (bdArrivate < totaleBD);
 				connection.close();
 				connection = null;
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// } catch (URISyntaxException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// } catch (IOException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
+//				AlertDialog.Builder builder = new AlertDialog.Builder(io);
+//				builder.setMessage("Errore di connessione")
+//						.setCancelable(false)
+//						.setPositiveButton("OK",
+//								new DialogInterface.OnClickListener() {
+//									public void onClick(DialogInterface dialog,
+//											int id) {
+//										io.onBackPressed();
+//									}
+//								});
+//				AlertDialog alert = builder.create();
+//				alert.show();
 			}
 			return null;
 		}
@@ -381,7 +396,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				if ("".equals(qr.getMimeType()) || qr.getMimeType() == null)
 					b.setVisibility(Button.INVISIBLE);
 				else {
-					b.setTag(qr.getMimeType() + "||" + unRisultato.getKey());
+					b.setTag(qr.getMimeType() + "++" + unRisultato.getKey());
 					b.setVisibility(Button.VISIBLE);
 					b.setOnClickListener(SfogliaRisultatiActivity.this);
 				}
@@ -439,16 +454,31 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 	@Override
 	public void onClick(View v) {
-		String tEk[]=((String) v.getTag()).split("||");
+		String tEk[] = ((String) v.getTag()).split("\\+\\+");
 		String url = "http://";
 		url += sp.getString("host", "ufficiomobile.comune.prato.it");
 		url += ":" + sp.getString("attport", "18080")
 				+ "/pratobackend/camel/allegati?key=";
 		url += tEk[1];
+		System.out.println(tEk[0] + "   " + tEk[1] + " " + url);
 		Intent i = new Intent(Intent.ACTION_VIEW);
-		i.setDataAndType(Uri.parse(url),tEk[0]);
-		startActivity(i);
-
+		i.setDataAndType(Uri.parse(url), tEk[0]);
+		try {
+			startActivity(i);
+		} catch (Throwable t) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(io);
+			builder.setMessage("Installa una app per gestire: "+tEk[0])
+					.setCancelable(false)
+					.setPositiveButton("OK",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									io.onBackPressed();
+								}
+							});
+			AlertDialog alert = builder.create();
+			alert.show();
+		}
 	}
 
 }

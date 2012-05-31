@@ -105,4 +105,12 @@
         android:layout_alignLeft="@+id/textView4"
         android:text="AttPort" />
 
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/salva"
+        android:layout_alignParentLeft="true"
+        android:text="Versione 1.0-beta2" />
+
 </RelativeLayout>
