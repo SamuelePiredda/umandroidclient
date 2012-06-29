@@ -68,7 +68,7 @@ public class UMAndroidClientActivity extends Activity implements
 				Tipo.CARR });
 		opzDiRicerca.put(Database.MCTC, new Tipo[] { Tipo.CF, Tipo.TARGA,
 				Tipo.PATENTE, Tipo.NC });
-		opzDiRicerca.put(Database.OTV, new Tipo[] { Tipo.IND, Tipo.GEN });
+		opzDiRicerca.put(Database.OTV, new Tipo[] { Tipo.IND, Tipo.GEN, Tipo.NUMORD });
 		opzDiRicerca.put(Database.PRA, new Tipo[] { Tipo.TARGA });
 		opzDiRicerca.put(Database.RUBATI,
 				new Tipo[] { Tipo.TARGA, Tipo.TELAIO });
