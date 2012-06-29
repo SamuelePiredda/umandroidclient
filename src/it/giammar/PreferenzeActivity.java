@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class PreferenzeActivity extends Activity implements OnClickListener {
+	private static final String TAG = "Preferenze";
 	private SharedPreferences sp;
 	private EditText utente;
 	private EditText password;

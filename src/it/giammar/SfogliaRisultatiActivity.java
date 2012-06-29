@@ -37,6 +37,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
@@ -61,6 +62,8 @@ import com.thoughtworks.xstream.XStream;
 
 public class SfogliaRisultatiActivity extends Activity implements
 		OnItemLongClickListener, OnClickListener {
+	private static final String TAG = "SfogliaRisultati";
+
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
@@ -109,7 +112,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				connection = null;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(TAG, "errore in chiusura", e);
 			}
 	}
 
@@ -125,7 +128,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 		setContentView(R.layout.sfogliarisultati);
 		XStream xstream = new XStream();
-		System.out.println(getIntent().getExtras().getString("query"));
+		Log.d(TAG, getIntent().getExtras().getString("query"));
 		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper1);
 		progress = (ProgressBar) findViewById(R.id.progressBar1);
@@ -200,8 +203,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
-				System.out
-						.println("CONNESSIONE A:    "
+				Log.i(TAG,
+						"CONNESSIONE A:    "
 								+ sp.getString("host",
 										"ufficiomobile.comune.prato.it"));
 				InputStream clientTruststoreIs = getResources()
@@ -210,8 +213,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				trustStore = KeyStore.getInstance("BKS");
 				trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
 
-				System.out.println("Loaded server certificates: "
-						+ trustStore.size());
+				Log.d(TAG, "Loaded server certificates: " + trustStore.size());
 
 				// initialize trust manager factory with the read truststore
 				TrustManagerFactory tmf = null;
@@ -246,18 +248,18 @@ public class SfogliaRisultatiActivity extends Activity implements
 				// ctx.getServerSessionContext().setSessionCacheSize(1);
 				// ctx.getServerSessionContext().setSessionTimeout(1);
 				ctx.init(null, tmf.getTrustManagers(), null);
-				System.out.println("prima di new stomp");
+				Log.d(TAG, "prima di new stomp");
 				stomp = new Stomp("tcp://"
 						+ sp.getString("host", "ufficiomobile.comune.prato.it")
 						+ ":" + sp.getString("port", "61614"));
-				System.out.println("prima di setsslcontext");
+				Log.d(TAG, "prima di setsslcontext");
 
 				stomp.setSslContext(ctx);
-				System.out.println("prima di connectBlocking");
+				Log.d(TAG, "prima di connectBlocking");
 
 				connection = stomp.connectBlocking();
-				System.out
-						.println("CONNESSO A:    "
+				Log.i(TAG,
+						"CONNESSO A:    "
 								+ sp.getString("host",
 										"ufficiomobile.comune.prato.it"));
 				StompFrame frame = new StompFrame(SUBSCRIBE);
@@ -290,16 +292,16 @@ public class SfogliaRisultatiActivity extends Activity implements
 				do {
 					StompFrame received = connection.receive();
 
-					System.out.println(received.contentAsString());
+					Log.d(TAG,received.contentAsString());
 					QueryReply qrep = (QueryReply) xstream.fromXML(received
 							.contentAsString());
-					System.out.println(qr.getVersione());
-					System.out.println(qrep.getVersione());
+					Log.d(TAG,""+qr.getVersione());
+					Log.d(TAG,""+qrep.getVersione());
 					if (qr.getVersione() == qrep.getVersione()) {
 
 						bdArrivate++;
 						totaleBD = qrep.getTotRisult();
-						System.out.println(bdArrivate + "/" + totaleBD);
+						Log.i(TAG,bdArrivate + "/" + totaleBD);
 						publishProgress(qrep);
 					}
 
@@ -314,19 +316,19 @@ public class SfogliaRisultatiActivity extends Activity implements
 				// e.printStackTrace();
 			} catch (Exception e) {
 
-				e.printStackTrace();
-//				AlertDialog.Builder builder = new AlertDialog.Builder(io);
-//				builder.setMessage("Errore di connessione")
-//						.setCancelable(false)
-//						.setPositiveButton("OK",
-//								new DialogInterface.OnClickListener() {
-//									public void onClick(DialogInterface dialog,
-//											int id) {
-//										io.onBackPressed();
-//									}
-//								});
-//				AlertDialog alert = builder.create();
-//				alert.show();
+				Log.e(TAG,"errore in ricezione risultati",e);
+				// AlertDialog.Builder builder = new AlertDialog.Builder(io);
+				// builder.setMessage("Errore di connessione")
+				// .setCancelable(false)
+				// .setPositiveButton("OK",
+				// new DialogInterface.OnClickListener() {
+				// public void onClick(DialogInterface dialog,
+				// int id) {
+				// io.onBackPressed();
+				// }
+				// });
+				// AlertDialog alert = builder.create();
+				// alert.show();
 			}
 			return null;
 		}
@@ -365,7 +367,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 					imei = possibleImei;
 
 				}
-				System.out.println("IMEI--------------" + imei);
+				Log.i(TAG,"IMEI--------------" + imei);
 				return imei;
 			}
 		}
@@ -417,7 +419,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 				float velocityY) {
-			System.out.println("sono in onfling");
+			Log.d(TAG,"sono in onfling");
 			try {
 				if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
 					return false;
@@ -434,7 +436,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 					viewFlipper.showPrevious();
 				}
 			} catch (Exception e) {
-				System.out.println(e.toString());
+				Log.e(TAG,"Errore in onfling",e);
 			}
 			return false;
 		}
@@ -467,7 +469,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 			startActivity(i);
 		} catch (Throwable t) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(io);
-			builder.setMessage("Installa una app per gestire: "+tEk[0])
+			builder.setMessage("Installa una app per gestire: " + tEk[0])
 					.setCancelable(false)
 					.setPositiveButton("OK",
 							new DialogInterface.OnClickListener() {

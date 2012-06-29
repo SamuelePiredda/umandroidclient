@@ -31,6 +31,8 @@ import com.thoughtworks.xstream.XStream;
 
 public class UMAndroidClientActivity extends Activity implements
 		OnClickListener, OnItemSelectedListener {
+	private static final String TAG = "AndroidClient";
+
 	private Button cerca;
 	private EditText query;
 	private CheckBox aPagamento;
@@ -185,7 +187,7 @@ public class UMAndroidClientActivity extends Activity implements
 			// visualizzaMCTC(isAuto == false
 			// || (dbScelto != null && dbScelto.equals(Database.MCTC)));
 
-			System.out.println(isAuto);
+//			System.out.println(isAuto);
 			break;
 		case R.id.tipoRicerca:
 			t = (Tipo) tipoRicerca.getSelectedItem();
