@@ -248,7 +248,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				// ctx.getServerSessionContext().setSessionCacheSize(1);
 				// ctx.getServerSessionContext().setSessionTimeout(1);
 				ctx.init(null, tmf.getTrustManagers(), null);
-				Log.d(TAG, "prima di new stomp");
+				Log.d(TAG, "prima di new stomp ");
 				stomp = new Stomp("tcp://"
 						+ sp.getString("host", "ufficiomobile.comune.prato.it")
 						+ ":" + sp.getString("port", "61614"));
@@ -462,9 +462,9 @@ public class SfogliaRisultatiActivity extends Activity implements
 		url += ":" + sp.getString("attport", "18080")
 				+ "/pratobackend/camel/allegati?key=";
 		url += tEk[1];
-		System.out.println(tEk[0] + "   " + tEk[1] + " " + url);
-		Intent i = new Intent(Intent.ACTION_VIEW);
-		i.setDataAndType(Uri.parse(url), tEk[0]);
+		Log.i(TAG,tEk[0] + "   " + tEk[1] + " " + url);
+		Intent i = new Intent(Intent.ACTION_VIEW,Uri.parse(url));
+//		i.setDataAndType(Uri.parse(url), tEk[0]);
 		try {
 			startActivity(i);
 		} catch (Throwable t) {
