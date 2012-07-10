@@ -249,9 +249,16 @@ public class SfogliaRisultatiActivity extends Activity implements
 				// ctx.getServerSessionContext().setSessionTimeout(1);
 				ctx.init(null, tmf.getTrustManagers(), null);
 				Log.d(TAG, "prima di new stomp ");
-				stomp = new Stomp("ssl://"
+				String stompProtocol;
+				if (sp.getBoolean("usessl", true))
+					stompProtocol="ssl";
+				else
+					stompProtocol="tcp";
+				
+				stomp = new Stomp(stompProtocol + "://"
 						+ sp.getString("host", "ufficiomobile.comune.prato.it")
 						+ ":" + sp.getString("port", "61614"));
+				
 				Log.d(TAG, "prima di setsslcontext");
 
 				stomp.setSslContext(ctx);

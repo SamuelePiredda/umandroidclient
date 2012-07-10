@@ -113,4 +113,12 @@
         android:layout_alignParentLeft="true"
         android:text="Versione 1.0-beta2" />
 
+    <CheckBox
+        android:id="@+id/UseSSL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/AttPort"
+        android:layout_below="@+id/AttPort"
+        android:text="Use SSL" />
+
 </RelativeLayout>

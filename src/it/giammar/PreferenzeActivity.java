@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.CheckBox;
 
 public class PreferenzeActivity extends Activity implements OnClickListener {
 	private static final String TAG = "Preferenze";
@@ -19,6 +20,7 @@ public class PreferenzeActivity extends Activity implements OnClickListener {
 	private EditText host;
 	private EditText port;
 	private EditText attPort;
+	private CheckBox useSSL;
 	private Button salva;
 
 	@Override
@@ -33,11 +35,13 @@ public class PreferenzeActivity extends Activity implements OnClickListener {
 		host = (EditText) findViewById(R.id.host);
 		port = (EditText) findViewById(R.id.port);
 		attPort = (EditText) findViewById(R.id.AttPort);
+		useSSL = (CheckBox) findViewById(R.id.UseSSL);
 		utente.setText(sp.getString("utente", ""));
 		password.setText(sp.getString("password", ""));
 		host.setText(sp.getString("host", "ufficiomobile.comune.prato.it"));
 		port.setText(sp.getString("port", "61613"));
 		attPort.setText(sp.getString("attport", "18080"));
+		useSSL.setChecked(sp.getBoolean("usessl",true));
 		salva.setOnClickListener(this);
 
 	}
@@ -72,6 +76,7 @@ public class PreferenzeActivity extends Activity implements OnClickListener {
 			edit.putString("host", host.getText().toString());
 			edit.putString("port", port.getText().toString());
 			edit.putString("attport", attPort.getText().toString());
+			edit.putBoolean("usessl", useSSL.isChecked());
 			edit.commit();
 			Intent main = new Intent(this, UMAndroidClientActivity.class);
 			this.startActivity(main);
