@@ -9,8 +9,11 @@ import it.giammar.pratomodel.QueryReply;
 import it.giammar.pratomodel.QueryReply.Database;
 import it.giammar.pratomodel.QueryRequest;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
@@ -299,16 +302,16 @@ public class SfogliaRisultatiActivity extends Activity implements
 				do {
 					StompFrame received = connection.receive();
 
-					Log.d(TAG,received.contentAsString());
+					Log.d(TAG, received.contentAsString());
 					QueryReply qrep = (QueryReply) xstream.fromXML(received
 							.contentAsString());
-					Log.d(TAG,""+qr.getVersione());
-					Log.d(TAG,""+qrep.getVersione());
+					Log.d(TAG, "" + qr.getVersione());
+					Log.d(TAG, "" + qrep.getVersione());
 					if (qr.getVersione() == qrep.getVersione()) {
 
 						bdArrivate++;
 						totaleBD = qrep.getTotRisult();
-						Log.i(TAG,bdArrivate + "/" + totaleBD);
+						Log.i(TAG, bdArrivate + "/" + totaleBD);
 						publishProgress(qrep);
 					}
 
@@ -323,7 +326,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				// e.printStackTrace();
 			} catch (Exception e) {
 
-				Log.e(TAG,"errore in ricezione risultati",e);
+				Log.e(TAG, "errore in ricezione risultati", e);
 				// AlertDialog.Builder builder = new AlertDialog.Builder(io);
 				// builder.setMessage("Errore di connessione")
 				// .setCancelable(false)
@@ -374,7 +377,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 					imei = possibleImei;
 
 				}
-				Log.i(TAG,"IMEI--------------" + imei);
+				Log.i(TAG, "IMEI--------------" + imei);
 				return imei;
 			}
 		}
@@ -426,7 +429,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 				float velocityY) {
-			Log.d(TAG,"sono in onfling");
+			Log.d(TAG, "sono in onfling");
 			try {
 				if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
 					return false;
@@ -443,7 +446,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 					viewFlipper.showPrevious();
 				}
 			} catch (Exception e) {
-				Log.e(TAG,"Errore in onfling",e);
+				Log.e(TAG, "Errore in onfling", e);
 			}
 			return false;
 		}
@@ -463,18 +466,24 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 	@Override
 	public void onClick(View v) {
+
 		String tEk[] = ((String) v.getTag()).split("\\+\\+");
 		String url = "http://";
 		url += sp.getString("host", "ufficiomobile.comune.prato.it");
 		url += ":" + sp.getString("attport", "18080")
 				+ "/pratobackend/camel/allegati?key=";
 		url += tEk[1];
-		Log.i(TAG,tEk[0] + "   " + tEk[1] + " " + url);
-		Intent i = new Intent(Intent.ACTION_VIEW,Uri.parse(url));
-//		i.setDataAndType(Uri.parse(url), tEk[0]);
 		try {
+			File f=salvaURL(url);
+			Log.i(TAG, tEk[0] + "   " + tEk[1] + " " + url);
+			Intent i = new Intent(Intent.ACTION_VIEW, Uri.fromFile(f));
+			i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+			// i.setDataAndType(Uri.parse(url), tEk[0]);
+
 			startActivity(i);
 		} catch (Throwable t) {
+			Log.d(TAG,"eccezione", t);
 			AlertDialog.Builder builder = new AlertDialog.Builder(io);
 			builder.setMessage("Installa una app per gestire: " + tEk[0])
 					.setCancelable(false)
@@ -488,6 +497,29 @@ public class SfogliaRisultatiActivity extends Activity implements
 			AlertDialog alert = builder.create();
 			alert.show();
 		}
+	}
+
+	private File salvaURL(String allegato) throws IOException {
+		URL url = new URL(allegato);
+		InputStream myInput = url.openConnection().getInputStream();
+		File cacheDir = getBaseContext().getCacheDir();
+		File f = new File(cacheDir, "allegato");
+
+		FileOutputStream fos = openFileOutput(f, Context.MODE_PRIVATE);
+
+		// transfer bytes from the input file to the output file
+		byte[] buffer = new byte[8192];
+		int length;
+		while ((length = myInput.read(buffer)) > 0) {
+			fos.write(buffer, 0, length);
+		}
+//		fos.close();
+		return f;
+	}
+
+	private FileOutputStream openFileOutput(File f, int modePrivate) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
