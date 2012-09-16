@@ -476,10 +476,10 @@ public class SfogliaRisultatiActivity extends Activity implements
 		try {
 			File f=salvaURL(url);
 			Log.i(TAG, tEk[0] + "   " + tEk[1] + " " + url);
-			Intent i = new Intent(Intent.ACTION_VIEW, Uri.fromFile(f));
+			Intent i = new Intent(Intent.ACTION_VIEW); //, Uri.fromFile(f));
 			i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-			// i.setDataAndType(Uri.parse(url), tEk[0]);
+			 i.setDataAndType(Uri.fromFile(f), tEk[0]);
 
 			startActivity(i);
 		} catch (Throwable t) {
@@ -502,10 +502,12 @@ public class SfogliaRisultatiActivity extends Activity implements
 	private File salvaURL(String allegato) throws IOException {
 		URL url = new URL(allegato);
 		InputStream myInput = url.openConnection().getInputStream();
-		File cacheDir = getBaseContext().getCacheDir();
-		File f = new File(cacheDir, "allegato");
-
-		FileOutputStream fos = openFileOutput(f, Context.MODE_PRIVATE);
+		File cacheDir = getFilesDir(); //getBaseContext().getCacheDir();
+		Log.d(TAG,cacheDir.getAbsolutePath());
+		File f = new File(cacheDir, "allegato.pdf");
+//		f.setReadable(true, false);
+//		FileOutputStream fos = new FileOutputStream(f);
+		FileOutputStream fos = openFileOutput("allegato.pdf", Context.MODE_WORLD_READABLE);
 
 		// transfer bytes from the input file to the output file
 		byte[] buffer = new byte[8192];
@@ -513,13 +515,10 @@ public class SfogliaRisultatiActivity extends Activity implements
 		while ((length = myInput.read(buffer)) > 0) {
 			fos.write(buffer, 0, length);
 		}
-//		fos.close();
+		fos.close();
 		return f;
 	}
 
-	private FileOutputStream openFileOutput(File f, int modePrivate) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 }
