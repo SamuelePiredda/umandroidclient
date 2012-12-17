@@ -76,6 +76,8 @@ public class UMAndroidClientActivity extends Activity implements
 				new Tipo[] { Tipo.TARGA, Tipo.TELAIO });
 		opzDiRicerca.put(Database.ZTL, new Tipo[] { Tipo.NC, Tipo.CF,
 				Tipo.TARGA, Tipo.PERM });
+		opzDiRicerca.put(Database.SIVES, new Tipo[] { 
+				Tipo.TARGA });
 	}
 
 	@Override
