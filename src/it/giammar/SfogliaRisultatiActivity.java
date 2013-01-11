@@ -370,7 +370,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 			else {
 				TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 				String possibleImei = tm.getDeviceId();
-				if (possibleImei.contains("0000000")) {
+				if (possibleImei==null || possibleImei.contains("0000000")) {
 					imei = fakeImei;
 
 				} else {
