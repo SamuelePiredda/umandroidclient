@@ -10,9 +10,9 @@
 	<classpathentry kind="lib" path="libs/CWAC-MergeAdapter.jar"/>
 	<classpathentry kind="lib" path="libs/CWAC-SackOfViewsAdapter.jar"/>
 	<classpathentry kind="lib" path="libs/hawtbuf-1.9.jar"/>
-	<classpathentry kind="lib" path="libs/hawtdispatch-1.11.jar"/>
-	<classpathentry kind="lib" path="libs/hawtdispatch-transport-1.11.jar"/>
 	<classpathentry kind="lib" path="libs/bcprov-jdk15on-147.jar"/>
-	<classpathentry kind="lib" path="libs/stompjms-client-1.12.jar"/>
+	<classpathentry kind="lib" path="libs/stompjms-client-1.13.jar"/>
+	<classpathentry kind="lib" path="libs/hawtdispatch-1.13.jar"/>
+	<classpathentry kind="lib" path="libs/hawtdispatch-transport-1.13.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
