@@ -13,8 +13,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +32,8 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.fusesource.hawtbuf.AsciiBuffer;
 import org.fusesource.stomp.client.BlockingConnection;
+import org.fusesource.stomp.client.Future;
+import org.fusesource.stomp.client.FutureConnection;
 import org.fusesource.stomp.client.Stomp;
 import org.fusesource.stomp.codec.StompFrame;
 
@@ -205,102 +212,41 @@ public class SfogliaRisultatiActivity extends Activity implements
 		@Override
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
+			XStream xstream = new XStream();
 			try {
 				Log.i(TAG,
 						"CONNESSIONE A:    "
 								+ sp.getString("host",
 										"ufficiomobile.comune.prato.it"));
-				InputStream clientTruststoreIs = getResources()
-						.openRawResource(R.raw.truststore);
-				KeyStore trustStore = null;
-				trustStore = KeyStore.getInstance("BKS");
-				trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
-
-				Log.d(TAG, "Loaded server certificates: " + trustStore.size());
-
-				// initialize trust manager factory with the read truststore
-				TrustManagerFactory tmf = null;
-				tmf = TrustManagerFactory.getInstance(TrustManagerFactory
-						.getDefaultAlgorithm());
-				tmf.init(trustStore);
-
-				// setup client certificate
-
-				// load client certificate
-				// InputStream keyStoreStream =
-				// getResources().openRawResource(R.raw.client);
-				// KeyStore keyStore = null;
-				// keyStore = KeyStore.getInstance("BKS");
-				// keyStore.load(keyStoreStream, "prato1.".toCharArray());
-
-				// System.out.println("Loaded client certificates: " +
-				// keyStore.size());
-				// initialize key manager factory with the read client
-				// certificate
-				KeyManagerFactory kmf = null;
-				kmf = KeyManagerFactory.getInstance(KeyManagerFactory
-						.getDefaultAlgorithm());
-				// kmf.init(keyStore, "141423".toCharArray());
-				// java.security.Security
-				// .addProvider(new
-				// org.bouncycastle.jce.provider.BouncyCastleProvider());
-
-				SSLContext ctx = SSLContext.getInstance("TLS");
-				// ctx.getClientSessionContext().setSessionCacheSize(1);
-				// ctx.getClientSessionContext().setSessionTimeout(1);
-				// ctx.getServerSessionContext().setSessionCacheSize(1);
-				// ctx.getServerSessionContext().setSessionTimeout(1);
-				ctx.init(null, tmf.getTrustManagers(), null);
+				SSLContext ctx = abilitaSSL();
 				Log.d(TAG, "prima di new stomp ");
-				String stompProtocol;
-				if (sp.getBoolean("usessl", true))
-					stompProtocol="ssl";
-				else
-					stompProtocol="tcp";
-				
-				stomp = new Stomp(stompProtocol + "://"
-						+ sp.getString("host", "ufficiomobile.comune.prato.it")
-						+ ":" + sp.getString("port", "61614"));
-				
-				Log.d(TAG, "prima di setsslcontext");
+				stomp = preparaConnessione(ctx);
 
-				stomp.setSslContext(ctx);
-				Log.d(TAG, "prima di connectBlocking");
+				Future<FutureConnection> future = stomp.connectFuture();
+				StompFrame frame = creaFrameRegistrazione();
 
-				connection = stomp.connectBlocking();
+				StompFrame frame2 = creaFrameInvioRichiesta(xstream, params);
+				FutureConnection connection = future.await();
+
 				Log.i(TAG,
 						"CONNESSO A:    "
 								+ sp.getString("host",
 										"ufficiomobile.comune.prato.it"));
-				StompFrame frame = new StompFrame(SUBSCRIBE);
-				frame.addHeader(DESTINATION,
-						StompFrame.encodeHeader("/queue/" + imei()));
-				frame.addHeader(ID, connection.nextId());
-				StompFrame response = connection.request(frame);
 
-				QueryRequest q = params[0];
-				q.setVersione(randomGenerator.nextInt());
-				q.setUserName(sp.getString("utente", ""));
-				q.setPassword(sp.getString("password", ""));
-				XStream xstream = new XStream();
+				Future<StompFrame> response = connection.request(frame);
 
-				frame = new StompFrame(SEND);
-				frame.addHeader(DESTINATION,
-						StompFrame.encodeHeader("/queue/queryServer"));
-				frame.addHeader(MESSAGE_ID, StompFrame.encodeHeader("test"));
-				frame.addHeader(StompFrame.encodeHeader("stomp"),
-						StompFrame.encodeHeader("yes"));
-				// autenticati(frame);
-				frame.addHeader(
-						StompFrame.encodeHeader("CamelJmsDestinationName"),
-						StompFrame.encodeHeader(imei()));
-				frame.content(new AsciiBuffer(xstream.toXML(q)));
-				connection.send(frame);
+				Future<Void> sendFuture = connection.send(frame2);
+				Log.d(TAG, "prima di await");
+				sendFuture.await();
+				Log.d(TAG, "dopo await");
+
 				bdArrivate = 0;
 				totaleBD = 1; // il loop deve continuare finche' non arriva
 								// almeno un risultato valido
 				do {
-					StompFrame received = connection.receive();
+					Future<StompFrame> receiveFuture = connection.receive();
+					StompFrame received = receiveFuture.await();
+					Log.d(TAG, "dopo await ciclo for");
 
 					Log.d(TAG, received.contentAsString());
 					QueryReply qrep = (QueryReply) xstream.fromXML(received
@@ -343,26 +289,86 @@ public class SfogliaRisultatiActivity extends Activity implements
 			return null;
 		}
 
-		// private void autenticati(StompFrame frame) throws Exception {
-		// ShiroSecurityToken securityToken = new ShiroSecurityToken(
-		// sp.getString("utente", ""), sp.getString("password",""));
-		// CipherService cipherService = new AesCipherService();
-		// ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		// ObjectOutput serialStream = new ObjectOutputStream(stream);
-		// serialStream.writeObject(securityToken);
-		// ByteSource byteSource = cipherService.encrypt(stream.toByteArray(),
-		// passPhrase);
-		// serialStream.close();
-		// stream.close();
-		// String encodedString =
-		// StringUtils.newStringUtf8((Base64.encodeBase64(byteSource.getBytes(),false)));
-		// String safeString = encodedString.replace('+','-').replace('/','_');
-		//
-		// frame.addHeader(StompFrame.encodeHeader("SHIRO_SECURITY_TOKEN"),
-		// new AsciiBuffer(encodedString));
-		// System.out.println(StompFrame.encodeHeader(safeString).length);
-		// System.out.println(StompFrame.encodeHeader(safeString));
-		// }
+		private Stomp preparaConnessione(SSLContext ctx)
+				throws URISyntaxException {
+			Stomp stomp;
+			String stompProtocol;
+			if (sp.getBoolean("usessl", true))
+				stompProtocol = "ssl";
+			else
+				stompProtocol = "tcp";
+
+			stomp = new Stomp(stompProtocol + "://"
+					+ sp.getString("host", "ufficiomobile.comune.prato.it")
+					+ ":" + sp.getString("port", "61614"));
+
+			Log.d(TAG, "prima di setsslcontext");
+			
+			stomp.setSslContext(ctx);
+			Log.d(TAG, "prima di connectBlocking");
+			return stomp;
+		}
+
+		private SSLContext abilitaSSL() throws KeyStoreException, IOException,
+				NoSuchAlgorithmException, CertificateException,
+				KeyManagementException {
+			InputStream clientTruststoreIs = getResources()
+					.openRawResource(R.raw.truststore);
+			KeyStore trustStore = null;
+			trustStore = KeyStore.getInstance("BKS");
+			trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
+
+			Log.d(TAG, "Loaded server certificates: " + trustStore.size());
+
+			// initialize trust manager factory with the read truststore
+			TrustManagerFactory tmf = null;
+			tmf = TrustManagerFactory.getInstance(TrustManagerFactory
+					.getDefaultAlgorithm());
+			tmf.init(trustStore);
+
+			
+			KeyManagerFactory kmf = null;
+			kmf = KeyManagerFactory.getInstance(KeyManagerFactory
+					.getDefaultAlgorithm());
+			
+
+			SSLContext ctx = SSLContext.getInstance("TLS");
+
+			ctx.init(null, tmf.getTrustManagers(), null);
+			return ctx;
+		}
+
+		private StompFrame creaFrameInvioRichiesta(XStream xstream,
+				QueryRequest... params) {
+			QueryRequest q = params[0];
+			q.setVersione(randomGenerator.nextInt());
+			q.setUserName(sp.getString("utente", ""));
+			q.setPassword(sp.getString("password", ""));
+			
+
+			StompFrame frame2 = new StompFrame(SEND);
+			frame2.addHeader(DESTINATION,
+					StompFrame.encodeHeader("/queue/queryServer"));
+			frame2.addHeader(MESSAGE_ID, StompFrame.encodeHeader("test"));
+			frame2.addHeader(StompFrame.encodeHeader("stomp"),
+					StompFrame.encodeHeader("yes"));
+			// autenticati(frame);
+			frame2.addHeader(
+					StompFrame.encodeHeader("CamelJmsDestinationName"),
+					StompFrame.encodeHeader(imei()));
+			frame2.content(new AsciiBuffer(xstream.toXML(q)));
+			return frame2;
+		}
+
+		private StompFrame creaFrameRegistrazione() {
+			StompFrame frame = new StompFrame(SUBSCRIBE);
+			frame.addHeader(DESTINATION,
+					StompFrame.encodeHeader("/queue/" + imei()));
+//				frame.addHeader(ID, connection.nextId());
+			return frame;
+		}
+
+	
 
 		private String imei() {
 			if (!imei.equals(""))
@@ -370,7 +376,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 			else {
 				TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 				String possibleImei = tm.getDeviceId();
-				if (possibleImei==null || possibleImei.contains("0000000")) {
+				if (possibleImei.contains("0000000")) {
 					imei = fakeImei;
 
 				} else {
@@ -474,16 +480,16 @@ public class SfogliaRisultatiActivity extends Activity implements
 				+ "/pratobackend/camel/allegati?key=";
 		url += tEk[1];
 		try {
-			File f=salvaURL(url);
+			File f = salvaURL(url);
 			Log.i(TAG, tEk[0] + "   " + tEk[1] + " " + url);
-			Intent i = new Intent(Intent.ACTION_VIEW); //, Uri.fromFile(f));
+			Intent i = new Intent(Intent.ACTION_VIEW); // , Uri.fromFile(f));
 			i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-			 i.setDataAndType(Uri.fromFile(f), tEk[0]);
+			i.setDataAndType(Uri.fromFile(f), tEk[0]);
 
 			startActivity(i);
 		} catch (Throwable t) {
-			Log.d(TAG,"eccezione", t);
+			Log.d(TAG, "eccezione", t);
 			AlertDialog.Builder builder = new AlertDialog.Builder(io);
 			builder.setMessage("Installa una app per gestire: " + tEk[0])
 					.setCancelable(false)
@@ -502,12 +508,13 @@ public class SfogliaRisultatiActivity extends Activity implements
 	private File salvaURL(String allegato) throws IOException {
 		URL url = new URL(allegato);
 		InputStream myInput = url.openConnection().getInputStream();
-		File cacheDir = getFilesDir(); //getBaseContext().getCacheDir();
-		Log.d(TAG,cacheDir.getAbsolutePath());
+		File cacheDir = getFilesDir(); // getBaseContext().getCacheDir();
+		Log.d(TAG, cacheDir.getAbsolutePath());
 		File f = new File(cacheDir, "allegato.pdf");
-//		f.setReadable(true, false);
-//		FileOutputStream fos = new FileOutputStream(f);
-		FileOutputStream fos = openFileOutput("allegato.pdf", Context.MODE_WORLD_READABLE);
+		// f.setReadable(true, false);
+		// FileOutputStream fos = new FileOutputStream(f);
+		FileOutputStream fos = openFileOutput("allegato.pdf",
+				Context.MODE_WORLD_READABLE);
 
 		// transfer bytes from the input file to the output file
 		byte[] buffer = new byte[8192];
@@ -518,7 +525,5 @@ public class SfogliaRisultatiActivity extends Activity implements
 		fos.close();
 		return f;
 	}
-
-	
 
 }
