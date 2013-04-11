@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.Random;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -32,8 +33,11 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.fusesource.hawtbuf.AsciiBuffer;
 import org.fusesource.stomp.client.BlockingConnection;
+import org.fusesource.stomp.client.Callback;
+import org.fusesource.stomp.client.CallbackConnection;
 import org.fusesource.stomp.client.Future;
 import org.fusesource.stomp.client.FutureConnection;
+import org.fusesource.stomp.client.Promise;
 import org.fusesource.stomp.client.Stomp;
 import org.fusesource.stomp.codec.StompFrame;
 
@@ -95,7 +99,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 	private Map<QueryReply.Database, LinearLayout> visBancheDati = new HashMap<QueryReply.Database, LinearLayout>();
 	private Map<QueryReply.Database, List<String>> righeBancheDati = new HashMap<QueryReply.Database, List<String>>();
 	private SharedPreferences sp;
-	protected BlockingConnection connection;
+	// protected BlockingConnection connection;
 	private EffettuaQuery eq;
 	final byte[] passPhrase = { (byte) 0x08, (byte) 0x09, (byte) 0x0A,
 			(byte) 0x0B, (byte) 0x0C, (byte) 0x0D, (byte) 0x0E, (byte) 0x0F,
@@ -116,14 +120,14 @@ public class SfogliaRisultatiActivity extends Activity implements
 			eq.cancel(true);
 			eq = null;
 		}
-		if (connection != null)
-			try {
-				connection.close();
-				connection = null;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				Log.e(TAG, "errore in chiusura", e);
-			}
+		// if (connection != null)
+		// try {
+		// connection.close();
+		// connection = null;
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// Log.e(TAG, "errore in chiusura", e);
+		// }
 	}
 
 	@Override
@@ -210,42 +214,77 @@ public class SfogliaRisultatiActivity extends Activity implements
 			AsyncTask<QueryRequest, QueryReply, Void> {
 
 		@Override
-		protected Void doInBackground(QueryRequest... params) {
+		protected Void doInBackground(final QueryRequest... params) {
 			Stomp stomp;
-			XStream xstream = new XStream();
+			final XStream xstream = new XStream();
+			final Promise<StompFrame> result = new Promise<StompFrame>();
 			try {
 				Log.i(TAG,
 						"CONNESSIONE A:    "
 								+ sp.getString("host",
 										"ufficiomobile.comune.prato.it"));
 				SSLContext ctx = abilitaSSL();
-				Log.d(TAG, "prima di new stomp ");
+
 				stomp = preparaConnessione(ctx);
-
-				Future<FutureConnection> future = stomp.connectFuture();
-				StompFrame frame = creaFrameRegistrazione();
-
-				StompFrame frame2 = creaFrameInvioRichiesta(xstream, params);
-				FutureConnection connection = future.await();
-
 				Log.i(TAG,
 						"CONNESSO A:    "
 								+ sp.getString("host",
 										"ufficiomobile.comune.prato.it"));
+				stomp.connectCallback(new Callback<CallbackConnection>() {
+					@Override
+					public void onFailure(Throwable value) {
+						result.onFailure(value);
+					}
 
-				Future<StompFrame> response = connection.request(frame);
+					@Override
+					public void onSuccess(final CallbackConnection connection) {
+						connection.receive(new Callback<StompFrame>() {
+							@Override
+							public void onFailure(Throwable value) {
+								result.onFailure(value);
+								connection.close(null);
+							}
 
-				Future<Void> sendFuture = connection.send(frame2);
+							@Override
+							public void onSuccess(StompFrame value) {
+								result.onSuccess(value);
+								connection.close(null);
+							}
+						});
+
+						connection.resume();
+
+						StompFrame frame = creaFrameRegistrazione(connection);
+
+						connection.request(frame, new Callback<StompFrame>() {
+							@Override
+							public void onFailure(Throwable value) {
+								result.onFailure(value);
+								connection.close(null);
+							}
+
+							@Override
+							public void onSuccess(StompFrame reply) {
+								StompFrame frame2 = creaFrameInvioRichiesta(
+										xstream, params);
+								connection.send(frame2, null);
+							}
+						});
+
+					}
+				});
+
 				Log.d(TAG, "prima di await");
-				sendFuture.await();
-				Log.d(TAG, "dopo await");
 
 				bdArrivate = 0;
 				totaleBD = 1; // il loop deve continuare finche' non arriva
 								// almeno un risultato valido
 				do {
-					Future<StompFrame> receiveFuture = connection.receive();
-					StompFrame received = receiveFuture.await();
+					StompFrame received;
+					// do {
+					received = result.await();
+					// Log.d(TAG, "dentro await");
+					// } while (received == null);
 					Log.d(TAG, "dopo await ciclo for");
 
 					Log.d(TAG, received.contentAsString());
@@ -262,8 +301,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 					}
 
 				} while (bdArrivate < totaleBD);
-				connection.close();
-				connection = null;
+				// connection.close();
+				// connection = null;
 				// } catch (URISyntaxException e) {
 				// // TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -303,7 +342,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 					+ ":" + sp.getString("port", "61614"));
 
 			Log.d(TAG, "prima di setsslcontext");
-			
+
 			stomp.setSslContext(ctx);
 			Log.d(TAG, "prima di connectBlocking");
 			return stomp;
@@ -312,8 +351,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 		private SSLContext abilitaSSL() throws KeyStoreException, IOException,
 				NoSuchAlgorithmException, CertificateException,
 				KeyManagementException {
-			InputStream clientTruststoreIs = getResources()
-					.openRawResource(R.raw.truststore);
+			InputStream clientTruststoreIs = getResources().openRawResource(
+					R.raw.truststore);
 			KeyStore trustStore = null;
 			trustStore = KeyStore.getInstance("BKS");
 			trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
@@ -326,11 +365,9 @@ public class SfogliaRisultatiActivity extends Activity implements
 					.getDefaultAlgorithm());
 			tmf.init(trustStore);
 
-			
 			KeyManagerFactory kmf = null;
 			kmf = KeyManagerFactory.getInstance(KeyManagerFactory
 					.getDefaultAlgorithm());
-			
 
 			SSLContext ctx = SSLContext.getInstance("TLS");
 
@@ -344,7 +381,6 @@ public class SfogliaRisultatiActivity extends Activity implements
 			q.setVersione(randomGenerator.nextInt());
 			q.setUserName(sp.getString("utente", ""));
 			q.setPassword(sp.getString("password", ""));
-			
 
 			StompFrame frame2 = new StompFrame(SEND);
 			frame2.addHeader(DESTINATION,
@@ -360,15 +396,13 @@ public class SfogliaRisultatiActivity extends Activity implements
 			return frame2;
 		}
 
-		private StompFrame creaFrameRegistrazione() {
+		private StompFrame creaFrameRegistrazione(CallbackConnection connection) {
 			StompFrame frame = new StompFrame(SUBSCRIBE);
 			frame.addHeader(DESTINATION,
 					StompFrame.encodeHeader("/queue/" + imei()));
-//				frame.addHeader(ID, connection.nextId());
+			frame.addHeader(ID, connection.nextId());
 			return frame;
 		}
-
-	
 
 		private String imei() {
 			if (!imei.equals(""))
