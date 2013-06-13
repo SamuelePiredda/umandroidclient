@@ -111,7 +111,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/salva"
         android:layout_alignParentLeft="true"
-        android:text="Versione 1.0-beta6" />
+        android:text="Versione 1.0-beta7" />
 
     <CheckBox
         android:id="@+id/UseSSL"
