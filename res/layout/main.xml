@@ -28,10 +28,9 @@
         android:id="@+id/cerca"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/aPagamento"
-        android:layout_below="@+id/query"
-        android:layout_toLeftOf="@+id/bancaDati"
-        android:layout_toRightOf="@+id/aPagamento"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/aPagamento"
         android:text="Cerca" />
 
     <Spinner
@@ -45,16 +44,17 @@
         android:id="@+id/bancaDati"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/cerca"
-        android:layout_alignTop="@+id/cerca"
-        android:layout_toLeftOf="@+id/tipoRicerca" />
+        android:layout_alignBottom="@+id/aPagamento"
+        android:layout_alignTop="@+id/aPagamento"
+        android:layout_toLeftOf="@+id/tipoRicerca"
+        android:layout_toRightOf="@+id/aPagamento" />
 
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/aPagamento" android:weightSum="5">
+        android:layout_below="@+id/cerca" android:weightSum="5">
 
         <LinearLayout
             android:layout_width="0dp"
