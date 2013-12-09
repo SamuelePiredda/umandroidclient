@@ -11,7 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -48,11 +50,13 @@ public class UMAndroidClientActivity extends Activity implements
 	private TextView textView1;
 	private TextView textView2;
 	private TextView textView3;
-
+	private SharedPreferences sp;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);
 		setContentView(R.layout.main);
 		riempiOpzioniDiRicerca();
 		preparaWidgets();
@@ -114,8 +118,18 @@ public class UMAndroidClientActivity extends Activity implements
 
 		ArrayList<String> dbs = new ArrayList<String>();
 		dbs.add("Auto");
-		for (Database d : Database.values())
-			dbs.add(d.toString());
+		//for (Database d : Database.values())
+		//	dbs.add(d.toString());
+		//gestione BD abilitate per utente
+		try {
+		
+			String elencoBD= sp.getString("elencobd", "");
+			String[] arrElencoBD = elencoBD.split(", ");
+			for(String str:arrElencoBD)
+				dbs.add(str);
+		}
+		catch (Exception ex) {}
+				
 		bancaDati.setAdapter(new ArrayAdapter<String>(this,
 				android.R.layout.simple_spinner_item, dbs));
 		bancaDati.setOnItemSelectedListener(this);
