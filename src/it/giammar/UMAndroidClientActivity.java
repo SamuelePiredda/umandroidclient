@@ -195,7 +195,8 @@ public class UMAndroidClientActivity extends Activity implements
 			} else {
 				isAuto = false;
 				tipoRicerca.setEnabled(true);
-				dbScelto = Database.values()[arg2 - 1];
+				//dbScelto = Database.values()[arg2 - 1];
+				dbScelto = Database.valueOf(bancaDati.getSelectedItem().toString());
 				tipoRicerca.setAdapter(new ArrayAdapter<Tipo>(this,
 						android.R.layout.simple_spinner_item, opzDiRicerca
 								.get(dbScelto)));

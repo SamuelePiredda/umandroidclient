@@ -6,6 +6,7 @@ import static org.fusesource.stomp.client.Constants.MESSAGE_ID;
 import static org.fusesource.stomp.client.Constants.SEND;
 import static org.fusesource.stomp.client.Constants.SUBSCRIBE;
 import it.giammar.pratomodel.QueryReply;
+import it.giammar.pratomodel.QueryReply.CodErrore;
 import it.giammar.pratomodel.QueryReply.Database;
 import it.giammar.pratomodel.QueryRequest;
 
@@ -385,37 +386,46 @@ public class SfogliaRisultatiActivity extends Activity implements
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
 			QueryReply qr = values[0];
-			int layout = R.layout.rigarisultato2;
-			LinearLayout risultati = visBancheDati.get(qr.getDaQualeDB());
-			viewFlipper.addView(risultati);
-			for (Entry<String, List<Map<String, String>>> unRisultato : qr
-					.getRisultati().entrySet()) {
-
-				ListView lv = ((ListView) risultati.getChildAt(1));
-				if (layout == R.layout.rigarisultato)
-					layout = R.layout.rigarisultato2;
-				else
-					layout = R.layout.rigarisultato;
-				String[] from = new String[] { "k", "v" };
-				int[] to = new int[] { R.id.k, R.id.v };
-
-				SimpleAdapter adapter = new SimpleAdapter(io,
-						unRisultato.getValue(), layout, from, to);
-				MergeAdapter ma = (MergeAdapter) lv.getAdapter();
-				LinearLayout separatore = (LinearLayout) inflater.inflate(
-						R.layout.separatore, null);
-				Button b = (Button) separatore.getChildAt(0);
-				if ("".equals(qr.getMimeType()) || qr.getMimeType() == null)
-					b.setVisibility(Button.INVISIBLE);
-				else {
-					b.setTag(qr.getMimeType() + "++" + unRisultato.getKey());
-					b.setVisibility(Button.VISIBLE);
-					b.setOnClickListener(SfogliaRisultatiActivity.this);
+			Entry<String, List<Map<String, String>>> primoRisultato=(Entry<String, List<Map<String, String>>>)qr
+					.getRisultati().entrySet().toArray()[0];
+			String primachiave=primoRisultato.getValue().get(0).values().toArray()[0].toString();
+			String primovalore=primoRisultato.getValue().get(0).values().toArray()[1].toString();
+			
+			if (!qr.getRetCode().equals(CodErrore.NONAUTORIZZATO)|primovalore.contains("IMEI")) {
+				
+				int layout = R.layout.rigarisultato2;
+				LinearLayout risultati = visBancheDati.get(qr.getDaQualeDB());
+				viewFlipper.addView(risultati);
+				for (Entry<String, List<Map<String, String>>> unRisultato : qr
+						.getRisultati().entrySet()) {
+	
+					ListView lv = ((ListView) risultati.getChildAt(1));
+					if (layout == R.layout.rigarisultato)
+						layout = R.layout.rigarisultato2;
+					else
+						layout = R.layout.rigarisultato;
+					String[] from = new String[] { "k", "v" };
+					int[] to = new int[] { R.id.k, R.id.v };
+	
+					SimpleAdapter adapter = new SimpleAdapter(io,
+							unRisultato.getValue(), layout, from, to);
+					MergeAdapter ma = (MergeAdapter) lv.getAdapter();
+					LinearLayout separatore = (LinearLayout) inflater.inflate(
+							R.layout.separatore, null);
+					Button b = (Button) separatore.getChildAt(0);
+					if ("".equals(qr.getMimeType()) || qr.getMimeType() == null)
+						b.setVisibility(Button.INVISIBLE);
+					else {
+						b.setTag(qr.getMimeType() + "++" + unRisultato.getKey());
+						b.setVisibility(Button.VISIBLE);
+						b.setOnClickListener(SfogliaRisultatiActivity.this);
+					}
+					ma.addView(separatore);
+					ma.addAdapter(adapter);
+					ma.notifyDataSetChanged();
+					lv.setAdapter(ma);
+	
 				}
-				ma.addView(separatore);
-				ma.addAdapter(adapter);
-				ma.notifyDataSetChanged();
-				lv.setAdapter(ma);
 
 			}
 			progress.setProgress(100 * bdArrivate / totaleBD);
