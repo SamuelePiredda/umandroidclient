@@ -194,7 +194,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 			// R.layout.rigarisultato, from, to);
 			MergeAdapter adapter = new MergeAdapter();
 			lv.setAdapter(adapter);
-			t.setText(db.toString());
+			//t.setText(db.toString());
+			t.setText(QueryReply.DatabaseDesc(db));
 			visBancheDati.put(db, l);
 		}
 

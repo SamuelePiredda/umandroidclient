@@ -32,22 +32,58 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/aPagamento"
         android:text="Cerca" />
-
-    <Spinner
+   <Spinner
         android:id="@+id/tipoRicerca"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/aPagamento"
-        android:layout_alignParentRight="true" />
+        android:minWidth="100dp"
 
-    <Spinner
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/bancaDati"
+
+
+
+
+       
+         />
+
+
+
+	
+	<Spinner
         android:id="@+id/bancaDati"
+
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/cerca"
+
+
+
+        
+        
+         />
+	
+	<Button
+        android:id="@+id/btnBancaDati"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/aPagamento"
-        android:layout_alignTop="@+id/aPagamento"
-        android:layout_toLeftOf="@+id/tipoRicerca"
-        android:layout_toRightOf="@+id/aPagamento" />
+        
+        
+        android:layout_toLeftOf="@+id/btnTipoRicerca"
+        android:layout_toRightOf="@+id/aPagamento"
+        android:text="" />
+<Button
+        android:id="@+id/btnTipoRicerca"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/aPagamento"
+        android:layout_alignParentRight="true"
+        android:text="            " />
+
 
     <LinearLayout
         android:id="@+id/linearLayout1"
