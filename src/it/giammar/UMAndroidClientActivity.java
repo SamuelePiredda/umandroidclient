@@ -108,11 +108,11 @@ public class UMAndroidClientActivity extends Activity implements
 		opzDiRicerca.put(Database.TRIB_SOG, new Tipo[] { 
 				Tipo.RAGSOC, Tipo.CF, Tipo.IDSOGGETTO });
 		opzDiRicerca.put(Database.ATTECON, new Tipo[] { 
-				Tipo.RAGSOC, Tipo.CF, Tipo.IND, Tipo.DATICAT, Tipo.IDSOGGETTO });
+				Tipo.ESTREMI, Tipo.RAGSOC, Tipo.CF, Tipo.IND, Tipo.DATICAT, Tipo.IDSOGGETTO });
 		opzDiRicerca.put(Database.ATTECON_SOG, new Tipo[] { 
 				Tipo.RAGSOC, Tipo.NC, Tipo.CF, Tipo.IDSOGGETTO });
 		opzDiRicerca.put(Database.EDIL, new Tipo[] { 
-				Tipo.RAGSOC, Tipo.CF, Tipo.IND, Tipo.DATICAT, Tipo.IDSOGGETTO });
+				Tipo.ESTREMI, Tipo.RAGSOC, Tipo.CF, Tipo.IND, Tipo.DATICAT, Tipo.IDSOGGETTO });
 		opzDiRicerca.put(Database.EDIL_SOG, new Tipo[] { 
 				Tipo.RAGSOC, Tipo.NC, Tipo.CF, Tipo.IDSOGGETTO });
 		opzDiRicerca.put(Database.CATASTO, new Tipo[] { 
