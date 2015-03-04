@@ -1,41 +1,51 @@
 package it.giammar;
 
 import it.giammar.pratomodel.QueryReply.Database;
-import it.giammar.pratomodel.QueryReply;
 import it.giammar.pratomodel.QueryRequest;
 import it.giammar.pratomodel.QueryRequest.Tipo;
 
+import java.io.*;
+import java.net.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+
+import org.apache.http.util.ByteArrayBuffer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.ImageView;
+import android.widget.Toast;
+import android.view.*;
+import android.widget.RelativeLayout;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -60,16 +70,13 @@ public class UMAndroidClientActivity extends Activity implements
 	private TextView textView1;
 	private TextView textView2;
 	private TextView textView3;
+	private RelativeLayout layout;
 	private SharedPreferences sp;
 	
 	private Activity io = this;
 	
 	private String[] arrElencoBD;
 	private String[] arrTipi;
-	
-	private List listDB; 
-
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -78,10 +85,53 @@ public class UMAndroidClientActivity extends Activity implements
 		setContentView(R.layout.main);
 		riempiOpzioniDiRicerca();
 		preparaWidgets();
+		
+		caricaLogo();
+		
+		
+		//DownloadFromUrl(getFilesDir() + "/prova.png");
+		
+		//Display getOrient = ((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+		//if (getOrient.getOrientation()==Surface.ROTATION_90 | getOrient.getOrientation()==Surface.ROTATION_270)	
+		//{
+		//	RelativeLayout rl=(RelativeLayout)findViewById(R.id.RelativeLayout1);
+		//	rl.setBackgroundResource(R.drawable.sfondo_app_oriz);
+		//}
 		// setDefaultLogin();
 
 	}
 
+	private void caricaLogo() {
+		File f = new File(getFilesDir() + "/logo_pers.png");
+		Bitmap bmImg;
+		if (f.exists()) {
+			bmImg = BitmapFactory.decodeFile(getFilesDir() + "/logo_pers.png");
+		}
+		else {
+			bmImg = BitmapFactory.decodeResource(getResources(),R.drawable.lince);
+		}
+			
+		ImageView imageView= (ImageView)findViewById(R.id.imageView1);
+		imageView.setImageBitmap(bmImg);
+		imageView.setAlpha(120);
+		int w;
+		int h;
+		Display getOrient = ((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+		if (getOrient.getOrientation()==Surface.ROTATION_90 | getOrient.getOrientation()==Surface.ROTATION_270)	{
+			w = (int)(getOrient.getHeight()/1.5);
+			h = (w * bmImg.getHeight())/bmImg.getWidth();
+		}
+		else {
+			w = (int)(getOrient.getWidth()/1.5);
+			h = (w * bmImg.getHeight())/bmImg.getWidth();
+		}
+		
+		RelativeLayout.LayoutParams lp=new RelativeLayout.LayoutParams(w,h);
+		lp.addRule(RelativeLayout.CENTER_VERTICAL);
+		lp.addRule(RelativeLayout.CENTER_HORIZONTAL);
+		imageView.setLayoutParams(lp);
+	}
+	
 	private void riempiOpzioniDiRicerca() {
 		opzDiRicerca = new HashMap<Database, Tipo[]>();
 		opzDiRicerca.put(Database.ANAGRAFE, new Tipo[] { Tipo.NC, Tipo.CF, });
@@ -93,31 +143,13 @@ public class UMAndroidClientActivity extends Activity implements
 		opzDiRicerca.put(Database.MCTC, new Tipo[] { Tipo.CF, Tipo.TARGA,
 				Tipo.PATENTE, Tipo.NC });
 		opzDiRicerca.put(Database.OTV, new Tipo[] { Tipo.IND, Tipo.GEN, Tipo.NUMORD });
-		opzDiRicerca.put(Database.PRA, new Tipo[] { Tipo.TARGA, Tipo.CF });
+		opzDiRicerca.put(Database.PRA, new Tipo[] { Tipo.TARGA });
 		opzDiRicerca.put(Database.RUBATI,
 				new Tipo[] { Tipo.TARGA, Tipo.TELAIO });
 		opzDiRicerca.put(Database.ZTL, new Tipo[] { Tipo.NC, Tipo.CF,
 				Tipo.TARGA, Tipo.PERM });
 		opzDiRicerca.put(Database.SIVES, new Tipo[] { 
 				Tipo.TARGA });
-		
-		opzDiRicerca.put(Database.RSU, new Tipo[] { 
-				Tipo.RAGSOC, Tipo.CF, Tipo.IND, Tipo.DATICAT, Tipo.IDSOGGETTO });
-		opzDiRicerca.put(Database.IMU, new Tipo[] { 
-				Tipo.RAGSOC, Tipo.CF, Tipo.IND, Tipo.DATICAT, Tipo.IDSOGGETTO });
-		opzDiRicerca.put(Database.TRIB_SOG, new Tipo[] { 
-				Tipo.RAGSOC, Tipo.CF, Tipo.IDSOGGETTO });
-		opzDiRicerca.put(Database.ATTECON, new Tipo[] { 
-				Tipo.ESTREMI, Tipo.RAGSOC, Tipo.CF, Tipo.IND, Tipo.DATICAT, Tipo.IDSOGGETTO });
-		opzDiRicerca.put(Database.ATTECON_SOG, new Tipo[] { 
-				Tipo.RAGSOC, Tipo.NC, Tipo.CF, Tipo.IDSOGGETTO });
-		opzDiRicerca.put(Database.EDIL, new Tipo[] { 
-				Tipo.ESTREMI, Tipo.RAGSOC, Tipo.CF, Tipo.IND, Tipo.DATICAT, Tipo.IDSOGGETTO });
-		opzDiRicerca.put(Database.EDIL_SOG, new Tipo[] { 
-				Tipo.RAGSOC, Tipo.NC, Tipo.CF, Tipo.IDSOGGETTO });
-		opzDiRicerca.put(Database.CATASTO, new Tipo[] { 
-				Tipo.CF, Tipo.DATICAT });
-
 	}
 
 	@Override
@@ -129,10 +161,74 @@ public class UMAndroidClientActivity extends Activity implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		Intent pref = new Intent(this, PreferenzeActivity.class);
-		this.startActivity(pref);
+		switch (item.getItemId()){
+	        case R.id.preferenze:
+	        	Intent pref = new Intent(this, PreferenzeActivity.class);
+	    		this.startActivity(pref);
+		        break;
+	        case R.id.aggiornamenti:
+	        	//scaricaApk();
+	        	//Intent intent = new Intent(Intent.ACTION_VIEW);
+	        	//intent.setDataAndType(Uri.fromFile(new File(getFilesDir() + "/ufficiomobileandroid.apk")), "application/vnd.android.package-archive");
+	        	//startActivity(intent); 
+	        	
+				try {
+					
+					int versionCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+					int newVersionCode = scaricaVers();
+					if (newVersionCode==-1) {
+						Toast.makeText(layout.getContext(), "Non è possibile collegarsi al server. Riprovare in un secondo momento.",
+								Toast.LENGTH_LONG).show();
+					}
+					else if (newVersionCode>versionCode) {
+						Intent promptInstall = new Intent(Intent.ACTION_VIEW,Uri.parse("http://mobilynx-bo.lansystems.it/files/ufficiomobileandroid.apk")); 
+			        	startActivity(promptInstall);
+					}
+					else {
+						Toast.makeText(layout.getContext(), "Nessun aggiornamento",
+								Toast.LENGTH_LONG).show();
+						
+					}
+				} catch (NameNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        	
+	        	
+	        	break;
+	  }
+
+		
+		
 		return true;
 	}
+
+	public int scaricaVers() {
+		
+		try {
+			
+			String str = "http://mobilynx-bo.lansystems.it/files/vers.txt";
+			
+		    // Create a URL for the desired page
+		    URL url = new URL(str);
+
+		    // Read all the text returned by the server
+		    BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+		    String line;
+		    line = in.readLine();
+		    
+		    
+		    in.close();
+		    return Integer.parseInt(line);
+		    
+		} catch (MalformedURLException e) {
+			return -1;
+		} catch (IOException e) {
+			return -1;
+		}
+	}
+	
+	
 
 	private void preparaWidgets() {
 		cerca = (Button) findViewById(R.id.cerca);
@@ -147,7 +243,7 @@ public class UMAndroidClientActivity extends Activity implements
 		textView1 = (TextView) findViewById(R.id.textView1);
 		textView2 = (TextView) findViewById(R.id.textView2);
 		textView3 = (TextView) findViewById(R.id.textView3);
-
+		layout =  (RelativeLayout) findViewById(R.id.RelativeLayout1);
 		btnBancaDati = (Button) findViewById(R.id.btnBancaDati);
 		btnTipoRicerca = (Button) findViewById(R.id.btnTipoRicerca);
 		
@@ -156,7 +252,6 @@ public class UMAndroidClientActivity extends Activity implements
 		
 		bancaDati.setVisibility(View.INVISIBLE);
 		tipoRicerca.setVisibility(View.INVISIBLE);
-		
 		btnBancaDati.setOnClickListener(new OnClickListener()
 	    {
 		      public void onClick(View v)
@@ -181,10 +276,7 @@ public class UMAndroidClientActivity extends Activity implements
 		    	  DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 	            	    @Override
 	            	    public void onClick(DialogInterface dialog, int which) {
-	            	    	//btnBancaDati.setText(arrElencoBD[which]);
-	            	    	
-	            	    	
-	            	    	btnBancaDati.setText(((Modello)listDB.get(which)).getBancaDati().toString());
+	            	    	btnBancaDati.setText(arrElencoBD[which]);
 	            	    	
 	            	    	if (which == 0) {
 	            				isAuto = true;
@@ -193,15 +285,14 @@ public class UMAndroidClientActivity extends Activity implements
 	            				isAuto = false;
 	            				btnTipoRicerca.setEnabled(true);
 	            				//dbScelto = Database.values()[arg2 - 1];
-	            				//dbScelto = Database.valueOf(arrElencoBD[which]);
-	            				dbScelto = Database.valueOf(((Modello)listDB.get(which)).getBancaDati().toString());
+	            				dbScelto = Database.valueOf(arrElencoBD[which]);
 	            				Tipo[] tipi= opzDiRicerca.get(dbScelto);
 	            				String strTipi="";
 	            				for (Tipo t:tipi) {
 	            					strTipi+= t.toString() + ", ";
 	            				}
 	            				arrTipi=strTipi.split(", ");
-           				
+	            				
 	            				btnTipoRicerca.setText(arrTipi[0]);
 	            				
 	            				//tipoRicerca.setAdapter(new ArrayAdapter<Tipo>(this,
@@ -215,28 +306,9 @@ public class UMAndroidClientActivity extends Activity implements
 	            	    }
 	            	};
 
-	            	final CustomAdapter adapter = new CustomAdapter(getBaseContext(), R.layout.row, listDB);
-	            	//ArrayAdapter<Modello> adapter = new ArrayAdapter<Modello>(getBaseContext(),R.layout.row, listDB);
-	            	
-	            	OnItemClickListener clickListener = new OnItemClickListener() {
-
-	                    @Override
-	                    public void onItemClick(AdapterView<?> adapter, View view,
-	                        int position, long id) {
-	                    	
-	                    	//Modello m= (Modello)adapter.getItemAtPosition(position);
-	                    	//txtPercorso.setText(m.getPercorso());
-	                    	//txtBancaDati.setText(m.getBancaDati());
-	                    	//return;
-	                       
-	                    }
-	                };
-	                
 	            	AlertDialog.Builder builder = new AlertDialog.Builder(io);
 	            	builder.setTitle("Seleziona la Banca Dati")
-	            		//.setItems(arrElencoBD, dialogClickListener)
-	            	//.setOnItemSelectedListener(listener)
-	            		.setAdapter(adapter, dialogClickListener)
+	            		.setItems(arrElencoBD, dialogClickListener)
 	            		.show();
 		    	  }
 		      }
@@ -262,7 +334,7 @@ public class UMAndroidClientActivity extends Activity implements
 	            		.setItems(arrTipi, dialogClickListener).show();
 		      }
 	    });
-
+		
 		Bundle nuovaRicerca = getIntent().getExtras();
 		if (nuovaRicerca != null)
 			query.setText(nuovaRicerca.getString("query"));
@@ -273,50 +345,15 @@ public class UMAndroidClientActivity extends Activity implements
 		//gestione BD abilitate per utente
 		try {
 		
-			String elencoBD= "Auto, " + sp.getString("elencobd", "");
+			String elencoBD="Auto, " + sp.getString("elencobd", "");
 			arrElencoBD = elencoBD.split(", ");
-			listDB = new LinkedList();
-			for(String str:arrElencoBD) {
+			for(String str:arrElencoBD)
 				dbs.add(str);
-				String db=str;
-				String desc;
-				int tipo; //tipo riga... auto o db
-				if (!str.equals("Auto")) {
-					desc=QueryReply.DatabaseDesc(Database.valueOf(str));
-					switch (Database.valueOf(str)) {
-						case RUBATI: case MCTC: case PRA: case ANIA: case SIVES:
-							tipo=1;
-							break;
-						default:
-							tipo=2;
-							break;
-					}
-				}
-				else {
-					desc="Ricerca Automatica";
-					tipo=0;
-				}
-				listDB.add(new Modello(db, desc, tipo));
-
-			}
-			
-			//Ordinamento list per tipo banca dati
-			Collections.sort(listDB, new Comparator<Modello>(){
-			    public int compare(Modello s1, Modello s2) {
-			    	if (s1.getTipo()>s2.getTipo())
-			    		return 1;
-			    	else if (s1.getTipo()<s2.getTipo())
-			    		return -1;
-			    	else
-			    		return 0;
-			        
-			    }
-			});
 		}
-		catch (Exception ex) {
-			String err= ex.getMessage();
-		}
-				
+		catch (Exception ex) {}
+		
+		//for (Database d : Database.values())
+		//	dbs.add(d.toString());
 		bancaDati.setAdapter(new ArrayAdapter<String>(this,
 				android.R.layout.simple_spinner_item, dbs));
 		bancaDati.setOnItemSelectedListener(this);
@@ -339,7 +376,7 @@ public class UMAndroidClientActivity extends Activity implements
 	private boolean preparaQuery(QueryRequest qr) {
 		boolean ok = true;
 		//Tipo tpScelto = (Tipo) tipoRicerca.getSelectedItem();
-		Tipo tpScelto=null;
+		 Tipo tpScelto=null;
 		if (isAuto == false) tpScelto= Tipo.valueOf(btnTipoRicerca.getText().toString());
 		// TODO finire validazioni campi
 		if ("".equals(query.getText().toString())) {
