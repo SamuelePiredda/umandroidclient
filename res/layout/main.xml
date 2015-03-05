@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/RelativeLayout1"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
     android:gravity="fill_horizontal"
-    android:background="@drawable/sfondo_app"
     android:orientation="vertical" >
-    
-    <ImageView
-        android:id="@+id/imageView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:src="@drawable/lince" />
-    
+
     <EditText
         android:id="@+id/query"
         android:layout_width="match_parent"
@@ -33,19 +24,16 @@
         android:layout_below="@+id/query"
         android:text="€" />
 
-   <!--  <Button
+    <Button
         android:id="@+id/cerca"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/aPagamento"
-        android:layout_below="@+id/query"
-        android:layout_toLeftOf="@+id/bancaDati"
-        android:layout_toRightOf="@+id/aPagamento"
-        android:text="Cerca" />  -->
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/aPagamento"
+        android:text="Cerca" />
 
-    
-
-<Spinner
+    <Spinner
         android:id="@+id/tipoRicerca"
         android:minWidth="100dp"
 
@@ -98,17 +86,6 @@
 
         android:text="            " />
 
-
-	
-    <Button
-        android:id="@+id/cerca"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/aPagamento"
-        android:text="Cerca" />
-    
-    
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
@@ -186,7 +163,5 @@
                 android:visibility="visible" android:maxLength="2"/>
         </LinearLayout>
     </LinearLayout>
-
-    
 
 </RelativeLayout>

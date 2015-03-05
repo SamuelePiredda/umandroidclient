@@ -5,76 +5,57 @@ import static org.fusesource.stomp.client.Constants.ID;
 import static org.fusesource.stomp.client.Constants.MESSAGE_ID;
 import static org.fusesource.stomp.client.Constants.SEND;
 import static org.fusesource.stomp.client.Constants.SUBSCRIBE;
-import it.giammar.pratomodel.QueryCheck;
-import it.giammar.pratomodel.QueryPermissions;
 import it.giammar.pratomodel.QueryReply;
 import it.giammar.pratomodel.QueryReply.CodErrore;
 import it.giammar.pratomodel.QueryReply.Database;
 import it.giammar.pratomodel.QueryRequest;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.EnumSet;
+import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
+import java.util.Random;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.fusesource.hawtbuf.AsciiBuffer;
 import org.fusesource.stomp.client.BlockingConnection;
-import org.fusesource.stomp.client.Future;
-import org.fusesource.stomp.client.FutureConnection;
 import org.fusesource.stomp.client.Stomp;
 import org.fusesource.stomp.codec.StompFrame;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.Display;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -90,9 +71,10 @@ public class SfogliaRisultatiActivity extends Activity implements
 	private static final int SWIPE_MIN_DISTANCE = 120;
 	private static final int SWIPE_MAX_OFF_PATH = 250;
 	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
-	
-	
 	private static Random randomGenerator = new Random();
+	private static String fakeImei = "test"
+			+ Integer.valueOf(randomGenerator.nextInt()).toString();
+	private static String imei = "";
 	private GestureDetector gestureDetector;
 	private View.OnTouchListener gestureListener;
 	private Animation slideLeftIn;
@@ -149,9 +131,6 @@ public class SfogliaRisultatiActivity extends Activity implements
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.sfogliarisultati);
-		
-		caricaLogo();
-		
 		XStream xstream = new XStream();
 		Log.d(TAG, getIntent().getExtras().getString("query"));
 		inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -191,37 +170,6 @@ public class SfogliaRisultatiActivity extends Activity implements
 
 	}
 
-	private void caricaLogo() {
-		File f = new File(getFilesDir() + "/logo_pers.png");
-		Bitmap bmImg;
-		if (f.exists()) {
-			bmImg = BitmapFactory.decodeFile(getFilesDir() + "/logo_pers.png");
-		}
-		else {
-			bmImg = BitmapFactory.decodeResource(getResources(),R.drawable.lince);
-		}
-			
-		ImageView imageView= (ImageView)findViewById(R.id.imageView2);
-		imageView.setImageBitmap(bmImg);
-		imageView.setAlpha(120);
-		int w;
-		int h;
-		Display getOrient = ((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-		if (getOrient.getOrientation()==Surface.ROTATION_90 | getOrient.getOrientation()==Surface.ROTATION_270)	{
-			w = (int)(getOrient.getHeight()/1.5);
-			h = (w * bmImg.getHeight())/bmImg.getWidth();
-		}
-		else {
-			w = (int)(getOrient.getWidth()/1.5);
-			h = (w * bmImg.getHeight())/bmImg.getWidth();
-		}
-		
-		RelativeLayout.LayoutParams lp=new RelativeLayout.LayoutParams(w,h);
-		lp.addRule(RelativeLayout.CENTER_VERTICAL);
-		lp.addRule(RelativeLayout.CENTER_HORIZONTAL);
-		imageView.setLayoutParams(lp);
-	}
-	
 	@Deprecated
 	private void riempiFlipperconBancheDati() {
 		for (Entry<Database, LinearLayout> es : visBancheDati.entrySet()) {
@@ -246,7 +194,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 			// R.layout.rigarisultato, from, to);
 			MergeAdapter adapter = new MergeAdapter();
 			lv.setAdapter(adapter);
-			t.setText(db.toString());
+			//t.setText(db.toString());
+			t.setText(db.toString() + " - " + QueryReply.DatabaseDesc(db));
 			visBancheDati.put(db, l);
 		}
 
@@ -259,9 +208,66 @@ public class SfogliaRisultatiActivity extends Activity implements
 		protected Void doInBackground(QueryRequest... params) {
 			Stomp stomp;
 			try {
+				Log.i(TAG,
+						"CONNESSIONE A:    "
+								+ sp.getString("host",
+										"ufficiomobile.comune.prato.it"));
+				InputStream clientTruststoreIs = getResources()
+						.openRawResource(R.raw.truststore);
+				KeyStore trustStore = null;
+				trustStore = KeyStore.getInstance("BKS");
+				trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
+
+				Log.d(TAG, "Loaded server certificates: " + trustStore.size());
+
+				// initialize trust manager factory with the read truststore
+				TrustManagerFactory tmf = null;
+				tmf = TrustManagerFactory.getInstance(TrustManagerFactory
+						.getDefaultAlgorithm());
+				tmf.init(trustStore);
+
+				// setup client certificate
+
+				// load client certificate
+				// InputStream keyStoreStream =
+				// getResources().openRawResource(R.raw.client);
+				// KeyStore keyStore = null;
+				// keyStore = KeyStore.getInstance("BKS");
+				// keyStore.load(keyStoreStream, "prato1.".toCharArray());
+
+				// System.out.println("Loaded client certificates: " +
+				// keyStore.size());
+				// initialize key manager factory with the read client
+				// certificate
+				KeyManagerFactory kmf = null;
+				kmf = KeyManagerFactory.getInstance(KeyManagerFactory
+						.getDefaultAlgorithm());
+				// kmf.init(keyStore, "141423".toCharArray());
+				// java.security.Security
+				// .addProvider(new
+				// org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+				SSLContext ctx = SSLContext.getInstance("TLS");
+				// ctx.getClientSessionContext().setSessionCacheSize(1);
+				// ctx.getClientSessionContext().setSessionTimeout(1);
+				// ctx.getServerSessionContext().setSessionCacheSize(1);
+				// ctx.getServerSessionContext().setSessionTimeout(1);
+				ctx.init(null, tmf.getTrustManagers(), null);
+				Log.d(TAG, "prima di new stomp ");
+				String stompProtocol;
+				if (sp.getBoolean("usessl", true))
+					stompProtocol="ssl";
+				else
+					stompProtocol="tcp";
 				
-				stomp = Utilities.connectTcpOrSsl(getResources(),sp);
+				stomp = new Stomp(stompProtocol + "://"
+						+ sp.getString("host", "ufficiomobile.comune.prato.it")
+						+ ":" + sp.getString("port", "61614"));
 				
+				Log.d(TAG, "prima di setsslcontext");
+
+				stomp.setSslContext(ctx);
+				Log.d(TAG, "prima di connectBlocking");
 
 				connection = stomp.connectBlocking();
 				Log.i(TAG,
@@ -270,7 +276,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 										"ufficiomobile.comune.prato.it"));
 				StompFrame frame = new StompFrame(SUBSCRIBE);
 				frame.addHeader(DESTINATION,
-						StompFrame.encodeHeader("/queue/" + Utilities.imei(getSystemService(Context.TELEPHONY_SERVICE))));
+						StompFrame.encodeHeader("/queue/" + imei()));
 				frame.addHeader(ID, connection.nextId());
 				StompFrame response = connection.request(frame);
 
@@ -289,7 +295,7 @@ public class SfogliaRisultatiActivity extends Activity implements
 				// autenticati(frame);
 				frame.addHeader(
 						StompFrame.encodeHeader("CamelJmsDestinationName"),
-						StompFrame.encodeHeader(Utilities.imei( getSystemService(Context.TELEPHONY_SERVICE))));
+						StompFrame.encodeHeader(imei()));
 				frame.content(new AsciiBuffer(xstream.toXML(q)));
 				connection.send(frame);
 				bdArrivate = 0;
@@ -339,59 +345,6 @@ public class SfogliaRisultatiActivity extends Activity implements
 			return null;
 		}
 
-
-
-//		private Stomp connectTcpOrSsl() throws KeyStoreException, IOException,
-//				NoSuchAlgorithmException, CertificateException,
-//				KeyManagementException, URISyntaxException {
-//			Stomp stomp;
-//			Log.i(TAG,
-//					"CONNESSIONE A:    "
-//							+ sp.getString("host",
-//									"ufficiomobile.comune.prato.it"));
-//			InputStream clientTruststoreIs = getResources()
-//					.openRawResource(R.raw.truststore);
-//			KeyStore trustStore = null;
-//			trustStore = KeyStore.getInstance("BKS");
-//			trustStore.load(clientTruststoreIs, "prato1.".toCharArray());
-//			
-//			Log.d(TAG, "Loaded server certificates: " + trustStore.size());
-//			
-//			// initialize trust manager factory with the read truststore
-//			TrustManagerFactory tmf = null;
-//			tmf = TrustManagerFactory.getInstance(TrustManagerFactory
-//					.getDefaultAlgorithm());
-//			tmf.init(trustStore);
-//			
-//			
-//			KeyManagerFactory kmf = null;
-//			kmf = KeyManagerFactory.getInstance(KeyManagerFactory
-//					.getDefaultAlgorithm());
-//			
-//			
-//			SSLContext ctx = SSLContext.getInstance("TLS");
-//			
-//			ctx.init(null, tmf.getTrustManagers(), null);
-//			Log.d(TAG, "prima di new stomp ");
-//			String stompProtocol;
-//			if (sp.getBoolean("usessl", true))
-//				stompProtocol="ssl";
-//			else
-//				stompProtocol="tcp";
-//			
-//			stomp = new Stomp(stompProtocol + "://"
-//					+ sp.getString("host", "ufficiomobile.comune.prato.it")
-//					+ ":" + sp.getString("port", "61614"));
-//			
-//			Log.d(TAG, "prima di setsslcontext");
-//			
-//			stomp.setSslContext(ctx);
-//			Log.d(TAG, "prima di connectBlocking");
-//			return stomp;
-//		}
-
-		
-
 		// private void autenticati(StompFrame frame) throws Exception {
 		// ShiroSecurityToken securityToken = new ShiroSecurityToken(
 		// sp.getString("utente", ""), sp.getString("password",""));
@@ -413,7 +366,23 @@ public class SfogliaRisultatiActivity extends Activity implements
 		// System.out.println(StompFrame.encodeHeader(safeString));
 		// }
 
-		
+		private String imei() {
+			if (!imei.equals(""))
+				return imei;
+			else {
+				TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+				String possibleImei = tm.getDeviceId();
+				if (possibleImei==null || possibleImei.contains("0000000")) {
+					imei = fakeImei;
+
+				} else {
+					imei = possibleImei;
+
+				}
+				Log.i(TAG, "IMEI--------------" + imei);
+				return imei;
+			}
+		}
 
 		@Override
 		protected void onProgressUpdate(QueryReply... values) {
@@ -425,12 +394,9 @@ public class SfogliaRisultatiActivity extends Activity implements
 			
 			if (!qr.getRetCode().equals(CodErrore.NONAUTORIZZATO)|primovalore.contains("IMEI")) {
 				
-				
-				
 				int layout = R.layout.rigarisultato2;
 				LinearLayout risultati = visBancheDati.get(qr.getDaQualeDB());
 				viewFlipper.addView(risultati);
-				
 				for (Entry<String, List<Map<String, String>>> unRisultato : qr
 						.getRisultati().entrySet()) {
 	
@@ -455,181 +421,20 @@ public class SfogliaRisultatiActivity extends Activity implements
 						b.setVisibility(Button.VISIBLE);
 						b.setOnClickListener(SfogliaRisultatiActivity.this);
 					}
-					
-					//b.setVisibility(Button.INVISIBLE); //disabilitati per il momento tutti i pulsanti allegati
-					XStream xstream = new XStream();
-					String xmlLabel=xstream.toXML(unRisultato);
-					//String comLabel="<elenco><db>" + qr.getDaQualeDB().name() + "</db>";
-					//for (int i=0;i<unRisultato.getValue().size();i++) {
-					//	String chiave=unRisultato.getValue().get(i).values().toArray()[0].toString();
-					//	String valore=unRisultato.getValue().get(i).values().toArray()[1].toString();
-					//	String id=unRisultato.getValue().get(i).values().toArray()[2].toString();
-					//	boolean inserito=false;
-					//	if (!inserito) {
-					//		inserito=true;
-					//		comLabel+="<id>" + id +  "</id>";
-					//	}
-					//	comLabel+="<campo><chiave>" + chiave +  "</chiave>";
-					//	comLabel+="<valore>" + valore +  "</valore></campo>";
-					//}
-					//comLabel+="</elenco>";
-					Button btnStampa=(Button)separatore.getChildAt(1);
-					if (sp.getBoolean("abilitastampa",false)) {
-						btnStampa.setVisibility(Button.VISIBLE);
-						btnStampa.setTag(qr.getDaQualeDB().toString() + "////" + xmlLabel);
-						//btnStampa.setVisibility(Button.INVISIBLE); //pulsante disabilitato temporaneamente
-						btnStampa.setOnClickListener(new OnClickListener()
-					    {
-						      public void onClick(View v)
-						      {
-						    	  
-						    	  try {
-						    		  
-							    	  Button bottone=(Button)v;
-								      String tag = (String)bottone.getTag();
-								      String[] arr=tag.split("////");
-								      String label=arr[1];
-								      XStream xstream = new XStream();
-								      Entry<String, List<Map<String, String>>> unRisultato=
-								    		  (Entry<String, List<Map<String, String>>>)xstream.fromXML(label);
-								      String id=unRisultato.getKey();
-						    			
-								      notifica(id);
-						    	
-	//							      AlertDialog.Builder builder = new AlertDialog.Builder(io);
-	//									builder.setMessage("Notifica Inviata. ID: " + id)
-	//											.setCancelable(true);
-	//									AlertDialog alert = builder.create();
-	//									alert.show();
-										
-						    		  Intent intent = new Intent("android.intent.action.MAIN");
-						    		  intent.addCategory(Intent.CATEGORY_LAUNCHER);
-						    		  intent.setAction(Intent.ACTION_MAIN);
-						    		  //intent.setComponent(new ComponentName("com.ufficiomobile.zebra.driver", 
-						    			//	  "com.ufficiomobile.zebra.driver.MainActivity"));
-						    		  intent.setComponent(new ComponentName(sp.getString("nomepackage",""), 
-						    				  sp.getString("nomeclass","")));
-						    		  intent.putExtra("label", tag);
-						    		  startActivity(intent);
-						    	 }
-						    	 catch (Exception ex) {
-						    		 String a =ex.getMessage();
-						    	 }
-						    	  
-						    	  
-		
-									
-						      }
-						    });
-					}
-					else {
-						btnStampa.setVisibility(Button.INVISIBLE);
-					}
 					ma.addView(separatore);
 					ma.addAdapter(adapter);
 					ma.notifyDataSetChanged();
 					lv.setAdapter(ma);
 	
 				}
-				
-				LinearLayout buttons=(LinearLayout)findViewById(R.id.buttons);
-				Button btn=new Button(getBaseContext());
-				btn.setText("    " + qr.getDaQualeDB().toString() + "    ");
-				btn.setTag(viewFlipper.indexOfChild(risultati));
-				//btn.setWidth(200);
-				btn.setOnClickListener(new OnClickListener() {
-					public void onClick(View v) {
-						int n=(Integer)v.getTag();
-						viewFlipper.setDisplayedChild(n);
-					}
-				});
-				buttons.addView(btn);
+
 			}
-			
 			progress.setProgress(100 * bdArrivate / totaleBD);
 			// super.onProgressUpdate(values);
 		}
 
 	}
 
-	public static Document loadXMLFromString(String xml) throws Exception
-    {
-		try {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        InputSource is = new InputSource(new StringReader(xml));
-        return builder.parse(is);
-		}
-		catch(Exception ex) {
-			return null;
-		}
-    }
-	
-	public void notifica(String HCode) {
-		try {
-			
-			sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);
-			Stomp stomp = Utilities.connectTcpOrSsl(getResources(),sp);
-			Future<FutureConnection> future = stomp.connectFuture();
-			FutureConnection connection = future.await();
-			Log.d(TAG, "connesso a "+sp);
-			// Lets setup a receive.. this does not block until you await it..
-			Future<StompFrame> receiveFuture = connection.receive();
-
-			StompFrame frame = new StompFrame(SUBSCRIBE);
-			frame.addHeader(DESTINATION,
-					StompFrame.encodeHeader("/temp-queue/qp"+Utilities.imei( getSystemService(Context.TELEPHONY_SERVICE))));
-			frame.addHeader(ID, connection.nextId());
-			Future<StompFrame> response = connection.request(frame);
-
-			// This unblocks once the response frame is received.
-			response.await();
-
-			frame = new StompFrame(SEND);
-			frame.addHeader(DESTINATION,
-					StompFrame.encodeHeader("/queue/checkNotifica"));
-			XStream xstream = new XStream();
-			QueryCheck qc=new QueryCheck();
-			qc.setPassword(sp.getString("password", ""));
-			qc.setUserName(sp.getString("utente", ""));
-			qc.setCodRis(HCode);
-			frame.addHeader(
-					StompFrame.encodeHeader("reply-to"),
-					StompFrame.encodeHeader("/temp-queue/qp"+Utilities.imei( getSystemService(Context.TELEPHONY_SERVICE))));
-			frame.content(new AsciiBuffer(xstream.toXML(qc)));
-			Future<Void> sendFuture = connection.send(frame);
-
-			// This unblocks once the frame is accepted by the socket. Use it
-			// to avoid flow control issues.
-			sendFuture.await();
-
-			StompFrame received = receiveFuture.await(15, TimeUnit.SECONDS);
-			if (received == null) {
-				// errore non ci è arrivato niente
-				// NB: non si può attendere all'infinito, Android ci blocca
-				// l'app
-				throw new FileNotFoundException("non arrivata risposta dal server");
-			}
-			QueryPermissions qpr =  (QueryPermissions) xstream.fromXML(received
-					.contentAsString());
-			
-			EnumSet<Database> risultato=qpr.getDbAmmessi();
-			List<Database> bancheDati= new ArrayList<Database>();
-			for (Database db:risultato) {
-				bancheDati.add(db);
-			}
-			
-		} catch (Exception e) {
-			Log.e(TAG, "errore in check notifica",e);
-			
-			
-			
-		}
-		finally {
-			
-		}
-		
-	}
 	class MyGestureDetector extends SimpleOnGestureListener {
 
 		@Override

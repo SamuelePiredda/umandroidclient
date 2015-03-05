@@ -9,11 +9,7 @@
         android:id="@+id/textView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView"
-        android:textSize="25sp"
-        android:textColor="#000000"
-        android:textStyle="bold"
-         />
+        android:text="TextView" />
 
     <ListView
         android:id="@+id/listView1"
