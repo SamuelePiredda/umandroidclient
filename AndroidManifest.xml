@@ -35,6 +35,8 @@
         </activity>
         <activity android:name="PreferenzeActivity" >
         </activity>
+        <activity android:name="ConfigurazioneActivity" >
+        </activity>
         <activity android:name="CustomizeAutoActivity" >
             <!-- intent-filter>
                 <action android:name="android.intent.action.MAIN" />

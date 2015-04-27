@@ -28,15 +28,19 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.thoughtworks.xstream.XStream;
 
-public class PreferenzeActivity extends Activity implements OnClickListener {
+//public class PreferenzeActivity extends Activity implements OnClickListener {
+public class PreferenzeActivity extends Activity {
 	private static final String TAG = "Preferenze";
 	private SharedPreferences sp;
 	private EditText utente;
@@ -46,6 +50,11 @@ public class PreferenzeActivity extends Activity implements OnClickListener {
 	private EditText attPort;
 	private CheckBox useSSL;
 	private Button salva;
+	private Button configAuto;
+	private TextView textView6;
+	private TextView textView5;
+	
+	private PreferenzeDataSource datasource;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +63,7 @@ public class PreferenzeActivity extends Activity implements OnClickListener {
 		setContentView(R.layout.preferenze);
 		sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);
 		salva = (Button) findViewById(R.id.salva);
+		configAuto = (Button) findViewById(R.id.configAuto);
 		utente = (EditText) findViewById(R.id.utente);
 		password = (EditText) findViewById(R.id.password);
 		host = (EditText) findViewById(R.id.host);
@@ -66,49 +76,208 @@ public class PreferenzeActivity extends Activity implements OnClickListener {
 		port.setText(sp.getString("port", "61613"));
 		attPort.setText(sp.getString("attport", "18080"));
 		useSSL.setChecked(sp.getBoolean("usessl", true));
-		salva.setOnClickListener(this);
+		textView6 = (TextView) findViewById(R.id.textView6);
+		textView5 = (TextView) findViewById(R.id.textView5);
+		
+		textView5.setOnLongClickListener(new OnLongClickListener() {
+			
+			@Override
+			public boolean onLongClick(View v) {
+				// TODO Auto-generated method stub
+    			Intent main = new Intent(PreferenzeActivity.this, ConfigurazioneActivity.class);
+    			//main.putExtra("MODE_AUTO", 0);
+    			//this.startActivity(main);
+    			startActivityForResult(main, 123);
+				return true;
+			}
+		});
+		
+        salva.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+        		boolean ok = true;
+        		if ("".equals(utente.getText().toString())) {
+        			utente.setError("utente obbligatorio");
+        			ok = false;
+        		}
+        		if ("".equals(password.getText().toString())) {
+        			password.setError("password obbligatorio");
+        			ok = false;
+        		}
+        		if ("".equals(host.getText().toString())) {
+        			host.setError("host obbligatorio");
+        			ok = false;
+        		}
+        		if ("".equals(port.getText().toString())) {
+        			port.setError("port obbligatorio");
+        			ok = false;
+        		}
+        		if ("".equals(attPort.getText().toString())) {
+        			attPort.setError("port obbligatorio");
+        			ok = false;
+        		}
+        		if (ok) {
+        			Editor edit = sp.edit();
+        			edit.putString("utente", utente.getText().toString());
+        			edit.putString("password", password.getText().toString());
+        			edit.putString("host", host.getText().toString());
+        			edit.putString("port", port.getText().toString());
+        			edit.putString("attport", attPort.getText().toString());
+        			edit.putBoolean("usessl", useSSL.isChecked());
+        			edit.commit();
+
+        		    //ArrayAdapter<Preferenze> adapter = (ArrayAdapter<Preferenze>) getListAdapter();
+        		    //Preferenze preferenze = null;
+
+        		    Integer i = datasource.getCountPreferenzeByHost(host.getText().toString());
+
+        		    int tmpUsessl=0;
+        		    if (useSSL.isChecked()==true) {
+        		     tmpUsessl=2;
+        		    }
+        		    Preferenze preferenza;
+        		    if (i == 0) {
+	        		    //String stUtente, String stPassword, String stHost, String stPort, String stAttport, int iUsessl
+	        		    preferenza = datasource.createPreferenza(utente.getText().toString(),password.getText().toString(), host.getText().toString(),port.getText().toString(), attPort.getText().toString(),tmpUsessl);
+	        		    //adapter.add(preferenza);
+        		    }
+        		    if (i == 1) {
+        		    	preferenza = datasource.getAllPreferenzeByHost(host.getText().toString());
+        		    	datasource.deletePreferenze(preferenza.getId());
+        		    	preferenza = datasource.createPreferenza(utente.getText().toString(),password.getText().toString(), host.getText().toString(),port.getText().toString(), attPort.getText().toString(),tmpUsessl);
+        		    }
+
+        			aggiornaBancaDati();
+
+//        			Intent main = new Intent(PreferenzeActivity.this, CustomizeAutoActivity.class);
+//        			main.putExtra("MODE_AUTO", 0);
+//        			//this.startActivity(main);
+//        			startActivity(main);
+        			
+        			finish();
+        		}
+            }
+        });
+        configAuto.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+    			Intent main = new Intent(PreferenzeActivity.this, CustomizeAutoActivity.class);
+    			main.putExtra("MODE_AUTO", 1);
+    			//this.startActivity(main);
+    			startActivity(main);
+            }
+        });
+		//salva.setOnClickListener(this);
+		//configAuto.setOnClickListener(this);
+
+	    datasource = new PreferenzeDataSource(this);
+	    datasource.open();
+
+	    //List<Preferenze> values = datasource.getAllPreferenze();
+
+	    // use the SimpleCursorAdapter to show the
+	    // elements in a ListView
+/*	    ArrayAdapter<Comment> adapter = new ArrayAdapter<Comment>(this,
+	        android.R.layout.simple_list_item_1, values);
+	    setListAdapter(adapter);*/
 
 	}
 
-	@Override
-	public void onClick(View v) {
-		boolean ok = true;
-		if ("".equals(utente.getText().toString())) {
-			utente.setError("utente obbligatorio");
-			ok = false;
-		}
-		if ("".equals(password.getText().toString())) {
-			password.setError("password obbligatorio");
-			ok = false;
-		}
-		if ("".equals(host.getText().toString())) {
-			host.setError("host obbligatorio");
-			ok = false;
-		}
-		if ("".equals(port.getText().toString())) {
-			port.setError("port obbligatorio");
-			ok = false;
-		}
-		if ("".equals(attPort.getText().toString())) {
-			attPort.setError("port obbligatorio");
-			ok = false;
-		}
-		if (ok) {
-			Editor edit = sp.edit();
-			edit.putString("utente", utente.getText().toString());
-			edit.putString("password", password.getText().toString());
-			edit.putString("host", host.getText().toString());
-			edit.putString("port", port.getText().toString());
-			edit.putString("attport", attPort.getText().toString());
-			edit.putBoolean("usessl", useSSL.isChecked());
-			edit.commit();
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-			aggiornaBancaDati();
+	    if (requestCode == 123) {
+	        if(resultCode == RESULT_OK){
+	            //String result=data.getExtras()getStringExtra("result");
+	        	
+	        	Intent intent = data;
+	        	if (data.getExtras() != null) {
+	        	  String sthost = intent.getStringExtra("host");
+	        	  String stutente = intent.getStringExtra("utente");
+	        	  String stpassword = intent.getStringExtra("password");
+	        	  String stport = intent.getStringExtra("port");
+	        	  String stattport = intent.getStringExtra("attport");
+	        	  String usessl = intent.getStringExtra("usessl");
 
-			Intent main = new Intent(this, CustomizeAutoActivity.class);
-			this.startActivity(main);
-		}
-	}
+	        	  long l = Long.parseLong(usessl);
+	        	  
+	      		  utente.setText(stutente);
+	    		  password.setText(stpassword);
+	    		  host.setText(sthost);
+	    		  port.setText(stport);
+	    		  attPort.setText(stattport);
+	    		  if (l == 0) {
+	    			  useSSL.setChecked(sp.getBoolean("usessl", false));  
+	    		  }
+	    		  else {
+	    			  useSSL.setChecked(sp.getBoolean("usessl", true));
+	    		  }
+	        	  //Toast.makeText(getApplicationContext(), "hai selezionato " + host.toString() + " " + utente.toString(), Toast.LENGTH_SHORT).show();
+	        	}
+
+
+	            
+	        }
+	        if (resultCode == RESULT_CANCELED) {
+	            //Write your code if there's no result
+	        }
+	    }
+	}//onActivityResult
+
+//	@Override
+//	public void onClick(View v) {
+//		boolean ok = true;
+//		if ("".equals(utente.getText().toString())) {
+//			utente.setError("utente obbligatorio");
+//			ok = false;
+//		}
+//		if ("".equals(password.getText().toString())) {
+//			password.setError("password obbligatorio");
+//			ok = false;
+//		}
+//		if ("".equals(host.getText().toString())) {
+//			host.setError("host obbligatorio");
+//			ok = false;
+//		}
+//		if ("".equals(port.getText().toString())) {
+//			port.setError("port obbligatorio");
+//			ok = false;
+//		}
+//		if ("".equals(attPort.getText().toString())) {
+//			attPort.setError("port obbligatorio");
+//			ok = false;
+//		}
+//		if (ok) {
+//			Editor edit = sp.edit();
+//			edit.putString("utente", utente.getText().toString());
+//			edit.putString("password", password.getText().toString());
+//			edit.putString("host", host.getText().toString());
+//			edit.putString("port", port.getText().toString());
+//			edit.putString("attport", attPort.getText().toString());
+//			edit.putBoolean("usessl", useSSL.isChecked());
+//			edit.commit();
+//			
+////			//
+//		    //ArrayAdapter<Preferenze> adapter = (ArrayAdapter<Preferenze>) getListAdapter();
+//		    //Preferenze preferenze = null;
+//
+//		      String[] preferenze1 = new String[] { "Cool", "Very nice", "Hate it" };
+//		      int nextInt = new Random().nextInt(3);
+//		      // save the new comment to the database
+//		      int tmpUsessl=0;
+//		      if (useSSL.isChecked()) {
+//		    	  tmpUsessl=2;
+//		      }
+//		      Preferenze preferenza = datasource.createPreferenza(utente.getText().toString(),password.getText().toString(), host.getText().toString(),port.getText().toString(), attPort.getText().toString(),tmpUsessl);
+//		      //adapter.add(preferenza);
+//
+////			//
+//
+//			aggiornaBancaDati();
+//
+//			Intent main = new Intent(this, CustomizeAutoActivity.class);
+//			this.startActivity(main);
+//		}
+//	}
 
 	public void aggiornaBancaDati() {
 

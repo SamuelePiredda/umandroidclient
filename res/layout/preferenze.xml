@@ -10,8 +10,7 @@
         android:layout_width="191dp"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/password"
-        android:layout_alignParentRight="true"
-         />
+        android:layout_alignParentRight="true" />
 
     <Button
         android:id="@+id/salva"
@@ -19,6 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
         android:text="Salva" />
 
     <EditText
@@ -111,7 +111,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/salva"
         android:layout_alignParentLeft="true"
-        android:text="Versione 1.3.1" />
+        android:text="Versione 1.1" />
 
     <CheckBox
         android:id="@+id/UseSSL"
@@ -120,5 +120,14 @@
         android:layout_alignLeft="@+id/AttPort"
         android:layout_below="@+id/AttPort"
         android:text="Use SSL" />
+
+    <Button
+        android:id="@+id/configAuto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/UseSSL"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/UseSSL"
+        android:text="Config Auto" />
 
 </RelativeLayout>

@@ -37,6 +37,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -154,6 +155,9 @@ public class SfogliaRisultatiActivity extends Activity implements
 			}
 		};
 		viewFlipper.setOnTouchListener(gestureListener);
+		
+//		viewFlipper.set (Color.TRANSPARENT);
+//		viewFlipper.requestFocus(0);
 
 		associaBancheDatiaViews();
 		// riempiFlipperconBancheDati();
@@ -195,7 +199,8 @@ public class SfogliaRisultatiActivity extends Activity implements
 			MergeAdapter adapter = new MergeAdapter();
 			lv.setAdapter(adapter);
 			//t.setText(db.toString());
-			t.setText(db.toString() + " - " + QueryReply.DatabaseDesc(db));
+			//t.setText(db.toString() + " - " + QueryReply.DatabaseDesc(db));
+			t.setText(db.toString());
 			visBancheDati.put(db, l);
 		}
 
