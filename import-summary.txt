@@ -1,0 +1,70 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+* .cvsignore
+* .idea/
+* .idea/.name
+* .idea/compiler.xml
+* .idea/copyright/
+* .idea/copyright/profiles_settings.xml
+* .idea/encodings.xml
+* .idea/misc.xml
+* .idea/modules.xml
+* .idea/umandroidclient.iml
+* .idea/vcs.xml
+* .idea/workspace.xml
+* ic_launcher-web.png
+* proguard.cfg
+
+Replaced Jars with Dependencies:
+--------------------------------
+The importer recognized the following .jar files as third party
+libraries and replaced them with Gradle dependencies instead. This has
+the advantage that more explicit version information is known, and the
+libraries can be updated automatically. However, it is possible that
+the .jar file in your project was of an older version than the
+dependency we picked, which could render the project not compileable.
+You can disable the jar replacement in the import wizard and try again:
+
+gson-2.3.1.jar => com.google.code.gson:gson:2.3.1
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+* AndroidManifest.xml => app/src/main/AndroidManifest.xml
+* libs/CWAC-MergeAdapter.jar => app/libs/CWAC-MergeAdapter.jar
+* libs/CWAC-SackOfViewsAdapter.jar => app/libs/CWAC-SackOfViewsAdapter.jar
+* libs/bcprov-jdk15on-147.jar => app/libs/bcprov-jdk15on-147.jar
+* libs/hawtbuf-1.9.jar => app/libs/hawtbuf-1.9.jar
+* libs/hawtdispatch-1.16-SNAPSHOT.jar => app/libs/hawtdispatch-1.16-SNAPSHOT.jar
+* libs/hawtdispatch-transport-1.16-SNAPSHOT.jar => app/libs/hawtdispatch-transport-1.16-SNAPSHOT.jar
+* libs/log4j-1.2.16.jar => app/libs/log4j-1.2.16.jar
+* libs/pratomodel-1.0.2-RELEASE.jar => app/libs/pratomodel-1.0.2-RELEASE.jar
+* libs/stompjms-client-1.13.jar => app/libs/stompjms-client-1.13.jar
+* libs/xstream-1.4.2.jar => app/libs/xstream-1.4.2.jar
+* lint.xml => app/lint.xml
+* res/ => app/src/main/res/
+* src/ => app/src/main/java/
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)

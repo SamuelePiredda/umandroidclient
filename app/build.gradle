@@ -1,0 +1,33 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 10
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "it.giammar"
+        minSdkVersion 7
+        targetSdkVersion 7
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile files('libs/CWAC-MergeAdapter.jar')
+    compile files('libs/CWAC-SackOfViewsAdapter.jar')
+    compile files('libs/bcprov-jdk15on-147.jar')
+    compile files('libs/hawtbuf-1.9.jar')
+    compile files('libs/hawtdispatch-1.16-SNAPSHOT.jar')
+    compile files('libs/hawtdispatch-transport-1.16-SNAPSHOT.jar')
+    compile files('libs/log4j-1.2.16.jar')
+    compile files('libs/pratomodel-1.0.2-RELEASE.jar')
+    compile files('libs/stompjms-client-1.13.jar')
+    compile files('libs/xstream-1.4.2.jar')
+}
