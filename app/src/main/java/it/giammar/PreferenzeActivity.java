@@ -312,6 +312,9 @@ public class PreferenzeActivity extends Activity {
 	}
 
 	public List<Database> scaricaBancheDati(String utente, String password) {
+//		List<Database> temp = new ArrayList<Database>();
+//		temp.add(Database.MCTC);
+//		return temp;
 		try {
 
 			sp = this.getSharedPreferences("UM", Context.MODE_PRIVATE);

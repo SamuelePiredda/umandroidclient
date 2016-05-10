@@ -31,7 +31,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/aPagamento"
-        android:text="Cerca" />
+        android:text="Cerca"
+        android:textSize="40dp" />
 
     <Spinner
         android:id="@+id/tipoRicerca"
@@ -46,7 +47,7 @@
 
 
 
-       
+
          />
 
 
@@ -63,8 +64,8 @@
 
 
 
-        
-        
+
+
          />
 	
 	<Button
@@ -163,5 +164,17 @@
                 android:visibility="visible" android:maxLength="2"/>
         </LinearLayout>
     </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Impostazioni"
+        android:id="@+id/impostazioni"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="167dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentLeft="false"
+        android:layout_alignWithParentIfMissing="false" />
 
 </RelativeLayout>

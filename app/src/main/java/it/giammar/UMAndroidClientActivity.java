@@ -51,6 +51,7 @@ public class UMAndroidClientActivity extends Activity implements
 	private Button cerca;
 	private Button btnBancaDati;
 	private Button btnTipoRicerca;
+	private Button impostazioni;
 	private EditText query;
 	private CheckBox aPagamento;
 	private Spinner bancaDati;
@@ -132,13 +133,18 @@ private Activity io = this;
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		invocaPreferenze();
+		return true;
+	}
+
+	private void invocaPreferenze() {
 		Intent pref = new Intent(this, PreferenzeActivity.class);
 		this.startActivity(pref);
-		return true;
 	}
 
 	private void preparaWidgets() {
 		cerca = (Button) findViewById(R.id.cerca);
+		impostazioni = (Button) findViewById(R.id.impostazioni);
 		query = (EditText) findViewById(R.id.query);
 		aPagamento = (CheckBox) findViewById(R.id.aPagamento);
 		bancaDati = (Spinner) findViewById(R.id.bancaDati);
@@ -159,7 +165,12 @@ private Activity io = this;
 		
 		bancaDati.setVisibility(View.INVISIBLE);
 		tipoRicerca.setVisibility(View.INVISIBLE);
-		
+		impostazioni.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				invocaPreferenze();
+			}
+		});
 		btnBancaDati.setOnClickListener(new OnClickListener()
 	    {
 		      public void onClick(View v)
